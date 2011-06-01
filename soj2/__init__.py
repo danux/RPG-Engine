@@ -1,0 +1,1 @@
+"""Installation directory for the SoJ2 project."""
