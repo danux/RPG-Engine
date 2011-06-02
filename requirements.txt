@@ -10,3 +10,8 @@ django-reversion
 sorl-thumbnail
 django-debug-toolbar
 south
+django-registration
+django-captcha
+django-simple-captcha
+pytz
+dateutil

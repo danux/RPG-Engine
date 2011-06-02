@@ -27,9 +27,16 @@ EMAIL_SUBJECT_PREFIX = "[SOJ2]"
 
 # Database settings.  Leave these as they are to use the default built-in
 # SQLite database.
-
-DATABASE_ENGINE = "sqlite3"
-DATABASE_NAME = "soj2.sqlite"
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'soj2.sqlite',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+    }
+}
 
 # Email settings.
 SERVER_EMAIL = "daniel@amarus.co.uk"
@@ -43,7 +50,7 @@ INSTALLED_APPS += ("sorl.thumbnail",
                    "mcnulty.links",
                    "mcnulty.contact",
                    "registration",
-                   "captcha")
+                   "soj2.accounts")
 
 ACCOUNT_ACTIVATION_DAYS = 7
 
@@ -55,10 +62,15 @@ STATIC_DOC_ROOT = '/srv/sites/soj2/soj2/media'
 
 LOGIN_REDIRECT_URL = '/'
 
-#AUTH_PROFILE_MODULE = 'members.UserProfile'
+AUTH_PROFILE_MODULE = 'accounts.UserProfile'
 
 ADMINS = (
      ('Amarus Support', 'support@amarus.co.uk'),
 )
 
 MANAGERS = ADMINS
+
+TIME_ZONE = 'UTC'
+
+LATEST_NEWS_SLUG = 'blah'
+MIDDLEWARE_CLASSES += ("django.middleware.csrf.CsrfViewMiddleware",)
