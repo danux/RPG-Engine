@@ -1,5 +1,11 @@
-<form method="POST" action=".">
-{% csrf_token %}
-{{ form.as_p }}
-<input type="submit" value="Register" />
-</form>
+Welcome,
+
+In order to access your SoJ2 account, you must complete the activation process.
+
+To activate your account please visit: http://{{ site.domain }}{% url accounts:activate activation_key %}
+
+Once you have activated your account your membership number will be verified against our database and access to specific areas of the site will be granted.
+
+Please allow up to 7 days for this checking process.
+
+APTUK

@@ -43,10 +43,13 @@ class UserProfile(models.Model):
     english_first_language = models.NullBooleanField()
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         verbose_name = "author"
         ordering = ['pen_name']
+        
+    def __unicode__(self):
+        return self.pen_name
 
 class SocialNetworkMembership(models.Model):
     '''

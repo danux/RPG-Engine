@@ -1,5 +1,6 @@
 import os, string, datetime
 
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse
@@ -87,12 +88,17 @@ class RegistrationTestCase(TestCase):
         self.assertRedirects(response, reverse('accounts:register-done'))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Welcome to SoJ2!')
-    
-    def testBlockedAccount(self):
-        """
-        Tests that blocked accounts cannot login
-        """
-        pass
+        user = authenticate(username='testActivationCodeUser', 
+                            password='password')
+        self.assertFalse(user.is_active)
+        user = User.objects.get(username="testActivationCodeUser")
+        response = self.client.get(reverse('accounts:activate', args=[
+                      user.registrationprofile_set.all()[0].activation_key]))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('accounts:activate-done'))
+        user = authenticate(username='testActivationCodeUser', 
+                            password='password')
+        self.assertTrue(user.is_active)
     
 class MemberInteractionTestCase(TestCase):
     """

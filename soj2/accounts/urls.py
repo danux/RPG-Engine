@@ -11,18 +11,17 @@ urlpatterns = patterns("",
                        url(r'^logout/$', 'mcnulty.pages.views.logout_view', name="logout"),
                        url(r'^permission-denied/$', 'django.views.generic.simple.direct_to_template', {'template': 'permission_denied.html'}, name="permission-denied"),
                        url(r'^register/done/$', 'django.views.generic.simple.direct_to_template', {'template': 'accounts/register-done.html'}, name='register-done'),
-                       url(r'^activate/complete/$', 'django.views.generic.simple.direct_to_template', {'template': 'registration/activation_complete.html'}, name='registration_activation_complete'),
+                       url(r'^activate/done/$', 'django.views.generic.simple.direct_to_template', {'template': 'accounts/activate-done.html'}, name='activate-done'),
 )
 
 urlpatterns += patterns("registration.views",
-               url(r'^activate/(?P<activation_key>\w+)/$', activate, 
-                   {
-                    'backend': 'aptuk.members.backend.AptukBackend',
-                    'template_name' : 'registration/activate.html'
-                    },
-                   name='registration_activate'),
+               url(r'^activate/(?P<activation_key>\w+)/$', activate, {
+                      'success_url' : 'accounts:activate-done',
+                    'backend': 'soj2.accounts.backend.Soj2Backend',
+                    'template_name' : 'accounts/activate.html',},
+                   name='activate'),
                url(r'^register/$', register, {
                       'success_url' : 'accounts:register-done',
                       'backend': 'soj2.accounts.backend.Soj2Backend', 
-                      'template_name' : 'accounts/register.html'}
-               ,name='register'),)
+                      'template_name' : 'accounts/register.html'},
+                  name='register'),)
