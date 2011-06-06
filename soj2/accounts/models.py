@@ -3,6 +3,7 @@ from django.contrib.auth.models import User, Group
 
 from soj2.accounts.choice_lists import COUNTRIES, TIMEZONES
 
+
 class SocialNetwork(models.Model):
     '''
     Class representing a social network, i.e. Facebook, Twitter, Myspace
@@ -14,14 +15,17 @@ class SocialNetwork(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
+
 class InstantMessenger(models.Model):
     '''
     Class representing an instant messenger program
     '''
     title = models.CharField(max_length=255, unique=True)
-    icon = models.ImageField(upload_to="dynamic/accounts/instant-messenger/icons")
+    icon = models.ImageField(upload_to=
+                             "dynamic/accounts/instant-messenger/icons")
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
+
 
 class UserProfile(models.Model):
     '''
@@ -30,15 +34,18 @@ class UserProfile(models.Model):
     '''
     user = models.OneToOneField(User, unique=True)
     pen_name = models.CharField(max_length=100, unique=True, db_index=True)
-    avatar = models.ImageField(blank=True, null=True,
-                           upload_to="dynamic/accounts/user-profile/avatars")
+    avatar = models.ImageField(
+            blank=True, null=True,
+            upload_to="dynamic/accounts/user-profile/avatars")
     date_of_birth = models.DateField()
-    social_networks = models.ManyToManyField(SocialNetwork, blank=True,
-                                 null=True, through="SocialNetworkMembership")
-    instant_messengers = models.ManyToManyField(InstantMessenger, blank=True, 
-                              null=True, through="InstantMessengerMembership")
+    social_networks = models.ManyToManyField(
+            SocialNetwork, blank=True,
+            null=True, through="SocialNetworkMembership")
+    instant_messengers = models.ManyToManyField(
+            InstantMessenger, blank=True, null=True,
+            through="InstantMessengerMembership")
     timezone = models.CharField(max_length=50, default="Europe/London",
-                                                            choices=TIMEZONES)
+                                choices=TIMEZONES)
     country = models.CharField(max_length=150, default="GB", choices=COUNTRIES)
     english_first_language = models.NullBooleanField()
     date_created = models.DateTimeField(auto_now_add=True)
@@ -50,6 +57,7 @@ class UserProfile(models.Model):
         
     def __unicode__(self):
         return self.pen_name
+
 
 class SocialNetworkMembership(models.Model):
     '''
@@ -67,6 +75,7 @@ class SocialNetworkMembership(models.Model):
     class Meta:
         order_with_respect_to = 'social_network'
 
+
 class InstantMessengerMembership(models.Model):
     '''
     Class representing a user's identity on a social network. Users may select
@@ -83,6 +92,7 @@ class InstantMessengerMembership(models.Model):
     class Meta:
         order_with_respect_to = 'instant_messenger'
 
+
 class FollowedUserProfile(models.Model):
     '''
     Class representing a relationship between 2 UserProfiles. A UserProfile
@@ -95,6 +105,7 @@ class FollowedUserProfile(models.Model):
     
     class Meta:
         ordering = ["-date_created"]
+
     
 class BlockedUserProfile(models.Model):
     '''

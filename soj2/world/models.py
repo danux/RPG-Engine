@@ -44,5 +44,3 @@ class Race(WorldNode):
     traditions = HtmlField()
     characteristics = HtmlField()
     physical_appearence = HtmlField()
-    home_town = models.ForeignKey(Town)
-    language = models.ForeignKey(Langugage)

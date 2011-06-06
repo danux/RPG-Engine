@@ -39,20 +39,15 @@ class RegistrationTestCase(TestCase):
         """
         user1 = User.objects.create_user(username='user2', password='pass1', 
                                                     email='daniel@amarus.co.uk')
-        
         user2 = User.objects.create_user(username='user3', password='pass1', 
                                                     email='daniel@amarus.co.uk')
-        
         user_profile1 = UserProfile(user=user1, pen_name='Test', 
                                         date_of_birth=datetime.date.today())
         user_profile1.save()
-        
         user_profile2 = UserProfile(user=user1, pen_name='Test', 
                                     date_of_birth=datetime.date.today())
-        
         self.assertRaises(IntegrityError, lambda: user_profile2.save())
         
-
     def testMinimumAge(self):
         """ 
         Tests that users under the required age cannot register
@@ -66,7 +61,7 @@ class RegistrationTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, "form", 
                  'date_of_birth', 'You must be at least 13 years old to play')
-        
+
     def testFullProcess(self):
         """ 
         Tests the full registration process for new accounts
@@ -99,7 +94,8 @@ class RegistrationTestCase(TestCase):
         user = authenticate(username='testActivationCodeUser', 
                             password='password')
         self.assertTrue(user.is_active)
-    
+
+
 class MemberInteractionTestCase(TestCase):
     """
     Tests permissions and block lists

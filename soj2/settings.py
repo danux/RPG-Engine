@@ -50,7 +50,9 @@ INSTALLED_APPS += ("sorl.thumbnail",
                    "mcnulty.links",
                    "mcnulty.contact",
                    "registration",
-                   "soj2.accounts")
+                   "soj2.accounts",
+                   "soj2.characters",
+                   "soj2.world")
 
 ACCOUNT_ACTIVATION_DAYS = 7
 
@@ -66,6 +68,10 @@ AUTH_PROFILE_MODULE = 'accounts.UserProfile'
 
 ADMINS = (
      ('Amarus Support', 'support@amarus.co.uk'),
+)
+
+CHARACTER_GMS = (
+     ('Daniel Davies', 'daniel@amarus.co.uk'),
 )
 
 MANAGERS = ADMINS

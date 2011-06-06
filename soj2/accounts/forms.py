@@ -19,10 +19,10 @@ class RegistrationFormWithFields(RegistrationForm):
     timezone = forms.ChoiceField(choices=TIMEZONES, initial="Europe/London")
     country = forms.ChoiceField(choices=COUNTRIES, initial='GB')
     english_first_language = forms.BooleanField(required=False,
-             help_text="Check this box if English is not your first language. " \
-             "This option does not affect play, but allows GMs and other players " \
-             " to be more understanding towards authors who do not speak English " \
-             "as a native language.")
+             help_text=("Check this box if English is not your first language. "
+             "This option does not affect play, but allows GMs and other players "
+             " to be more understanding towards authors who do not speak English "
+             "as a native language."))
     
     def clean_pen_name(self):
         try:
@@ -30,9 +30,9 @@ class RegistrationFormWithFields(RegistrationForm):
         except UserProfile.DoesNotExist:
             return self.cleaned_data['pen_name']
         else:
-            raise forms.ValidationError(
-                                'This pen name is already in use. Please select' \
-                                'another')
+            raise forms.ValidationError((
+                                "This pen name is already in use. Please select"
+                                "another"))
     
     def clean_date_of_birth(self):
         max_dob = date.today() + relativedelta(years=-13)
