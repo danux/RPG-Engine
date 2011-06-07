@@ -44,3 +44,4 @@ class Race(WorldNode):
     traditions = HtmlField()
     characteristics = HtmlField()
     physical_appearence = HtmlField()
+    playing_tips = HtmlField()

@@ -44,9 +44,17 @@ class RegistrationTestCase(TestCase):
         user_profile1 = UserProfile(user=user1, pen_name='Test', 
                                         date_of_birth=datetime.date.today())
         user_profile1.save()
-        user_profile2 = UserProfile(user=user1, pen_name='Test', 
-                                    date_of_birth=datetime.date.today())
-        self.assertRaises(IntegrityError, lambda: user_profile2.save())
+        
+        post_data = {
+            'pen_name' : 'Test',
+        }
+        response = self.client.post(reverse('accounts:register'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(
+                response,
+                "form", 
+                'pen_name',
+                "This pen name is already in use. Please select another")
         
     def testMinimumAge(self):
         """ 

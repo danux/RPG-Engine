@@ -46,10 +46,11 @@ DEFAULT_FROM_EMAIL = "daniel@amarus.co.uk"
 # custom applications to enable additional functionality for your site.
 
 INSTALLED_APPS += ("sorl.thumbnail",
+                   "registration",
+                   "django_coverage",
                    "mcnulty.contentpages",
                    "mcnulty.links",
                    "mcnulty.contact",
-                   "registration",
                    "soj2.accounts",
                    "soj2.characters",
                    "soj2.world")
@@ -80,3 +81,9 @@ TIME_ZONE = 'UTC'
 
 LATEST_NEWS_SLUG = 'blah'
 MIDDLEWARE_CLASSES += ("django.middleware.csrf.CsrfViewMiddleware",)
+
+COVERAGE_CODE_EXCLUDES = [
+    'def __unicode__\(self\):',
+    'def get_absolute_url\(self\):',
+    'from .* import .*', 'import .*',
+]

@@ -71,9 +71,8 @@ def find_available_slug(object, instance, slug):
 def slug_generator(sender, **kwargs):
     """ Generates a unique slug for a character """
     instance = kwargs['instance']
-    if instance.slug is not None:
+    if instance.slug is not '':
         return
     slug = slugify(instance.name)
     find_available_slug(sender, instance, slug)
-        
 pre_save.connect(slug_generator, sender=Character)

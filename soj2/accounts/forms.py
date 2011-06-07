@@ -32,7 +32,7 @@ class RegistrationFormWithFields(RegistrationForm):
         else:
             raise forms.ValidationError((
                                 "This pen name is already in use. Please select"
-                                "another"))
+                                " another"))
     
     def clean_date_of_birth(self):
         max_dob = date.today() + relativedelta(years=-13)

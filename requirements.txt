@@ -15,3 +15,4 @@ django-captcha
 django-simple-captcha
 pytz
 dateutil
+django-coverage

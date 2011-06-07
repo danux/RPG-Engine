@@ -24,7 +24,7 @@ class CharacterCreationTestCase(TestCase):
 
     def tearDown(self):
         pass
-
+    
     def submit_application_form(self, submit=False, 
                                 url=reverse('characters:application-form')):
         """
@@ -46,6 +46,15 @@ class CharacterCreationTestCase(TestCase):
                                     url, 
                                     post_data)
         self.assertEqual(response.status_code, 200)
+
+    def testBlankForm(self):
+        response = self.client.get(
+                reverse('characters:application-form'))
+        self.assertEqual(response.status_code, 200)
+        
+        response = self.client.get(
+                reverse('characters:amend-application-form', args=[0]))
+        self.assertEqual(response.status_code, 404)
 
     def testCreationForm(self):
         """
@@ -75,7 +84,24 @@ class CharacterCreationTestCase(TestCase):
         response = self.client.get(
                 reverse('characters:amend-application-form', args=[1]))
         self.assertEqual(response.status_code, 404)
-    
+        
+    def testSlugGeneration(self):
+        self.submit_application_form(submit=True,
+                                     url=reverse('characters:application-form'))
+        
+        post_data = {
+            'physical_appearence' : 'test_appearance',
+            'back_story' : 'test_back_story',
+            'languages' : 1,
+            'race' : 2,
+            'hometown' : 4,
+            'name' : 'Test-Name',
+            'Submit' : True
+        }
+        response = self.client.post(reverse('characters:application-form'), 
+                                    post_data)
+        self.assertEqual(response.status_code, 200)
+        
     def testGmEmails(self):
         """
         Tests that the correct GMs are sent emails, with a valid link, to 
