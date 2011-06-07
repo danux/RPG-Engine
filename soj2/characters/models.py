@@ -2,9 +2,9 @@ from django.db import models
 
 from django.contrib.auth.models import User
 from django.db.models.signals import pre_save
-from django.template.defaultfilters import slugify
 
 from soj2.accounts.models import UserProfile as Author
+from soj2.utils.slug_generator import slug_generator
 from soj2.world.models import Town, Race, Language
 
 
@@ -53,26 +53,5 @@ class Character(models.Model):
             return 'pending'
         else:
             return 'draft'
-
-def find_available_slug(object, instance, slug):
-    """
-    Recursive method that will add underscores to a slug field
-    until a free value is located
-    """
-    try:
-        sender_node = object.objects.get(slug=slug)
-    except object.DoesNotExist:
-        instance.slug = slug
-    else:
-        slug = '%s_' % slug
-        find_available_slug(object, instance, slug)
-    return
-
-def slug_generator(sender, **kwargs):
-    """ Generates a unique slug for a character """
-    instance = kwargs['instance']
-    if instance.slug is not '':
-        return
-    slug = slugify(instance.name)
-    find_available_slug(sender, instance, slug)
+        
 pre_save.connect(slug_generator, sender=Character)

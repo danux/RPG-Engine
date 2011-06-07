@@ -102,6 +102,27 @@ class CharacterCreationTestCase(TestCase):
                                     post_data)
         self.assertEqual(response.status_code, 200)
         
+        post_data = {
+            'physical_appearence' : 'test_appearance',
+            'back_story' : 'test_back_story',
+            'languages' : 1,
+            'race' : 2,
+            'hometown' : 4,
+            'name' : 'Test  Name',
+            'Submit' : True
+        }
+        response = self.client.post(reverse('characters:application-form'), 
+                                    post_data)
+        self.assertEqual(response.status_code, 200)
+        
+        character_one = Character.objects.get(pk=1)
+        character_two = Character.objects.get(pk=2)
+        character_three = Character.objects.get(pk=3)
+
+        self.assertEquals(character_one.slug, 'test-name')
+        self.assertEquals(character_two.slug, 'test-name_')
+        self.assertEquals(character_three.slug, 'test-name__')
+        
     def testGmEmails(self):
         """
         Tests that the correct GMs are sent emails, with a valid link, to 
