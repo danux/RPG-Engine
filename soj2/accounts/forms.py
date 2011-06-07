@@ -13,7 +13,7 @@ class RegistrationFormWithFields(RegistrationForm):
     A sub class of the django-registration app's registration form. This form
     adds in the specific fields for SoJ2 and validates them.
     """
-    pen_name = forms.CharField(widget=forms.TextInput,
+    name = forms.CharField(widget=forms.TextInput, label="Pen name",
                    help_text="How you will be known, as an author, in the game")
     date_of_birth = forms.DateField(widget=SelectDateWidget(years=range(1900,2011)))
     timezone = forms.ChoiceField(choices=TIMEZONES, initial="Europe/London")
@@ -24,11 +24,11 @@ class RegistrationFormWithFields(RegistrationForm):
              " to be more understanding towards authors who do not speak English "
              "as a native language."))
     
-    def clean_pen_name(self):
+    def clean_name(self):
         try:
-            UserProfile.objects.get(pen_name=self.cleaned_data['pen_name'])
+            UserProfile.objects.get(name=self.cleaned_data['name'])
         except UserProfile.DoesNotExist:
-            return self.cleaned_data['pen_name']
+            return self.cleaned_data['name']
         else:
             raise forms.ValidationError((
                                 "This pen name is already in use. Please select"

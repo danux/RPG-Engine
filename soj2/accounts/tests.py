@@ -33,7 +33,7 @@ class RegistrationTestCase(TestCase):
         self.assertRaises(IntegrityError, lambda: User.objects.create_user(
                username='user1', password='pass1', email='daniel@amarus.co.uk'))
 
-    def testUniquePenName(self):
+    def testUniqueName(self):
         """
         Tests that pen names are unique
         """
@@ -41,19 +41,19 @@ class RegistrationTestCase(TestCase):
                                                     email='daniel@amarus.co.uk')
         user2 = User.objects.create_user(username='user3', password='pass1', 
                                                     email='daniel@amarus.co.uk')
-        user_profile1 = UserProfile(user=user1, pen_name='Test', 
+        user_profile1 = UserProfile(user=user1, name='Test', 
                                         date_of_birth=datetime.date.today())
         user_profile1.save()
         
         post_data = {
-            'pen_name' : 'Test',
+            'name' : 'Test',
         }
         response = self.client.post(reverse('accounts:register'), post_data)
         self.assertEqual(response.status_code, 200)
         self.assertFormError(
                 response,
                 "form", 
-                'pen_name',
+                'name',
                 "This pen name is already in use. Please select another")
         
     def testMinimumAge(self):
@@ -79,7 +79,7 @@ class RegistrationTestCase(TestCase):
             'email' : 'testActivationCodeUser@amarus.co.uk',
             'password1' : 'password',
             'password2' : 'password',
-            'pen_name' : 'pen_name',
+            'name' : 'pen_name',
             'date_of_birth_year' : 1986,
             'date_of_birth_month' : 8,
             'date_of_birth_day' : 16,

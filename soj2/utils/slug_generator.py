@@ -15,7 +15,7 @@ def find_available_slug(object, instance, slug):
     return
 
 def slug_generator(sender, **kwargs):
-    """ Generates a unique slug for a character """
+    """ Generates a unique slug for a node """
     instance = kwargs['instance']
     if instance.slug is not '':
         return

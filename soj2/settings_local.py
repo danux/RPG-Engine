@@ -18,3 +18,5 @@ DATABASES = {
         'PORT': '',
     }
 }
+
+COVERAGE_REPORT_HTML_OUTPUT_DIR = '/srv/sites/soj2/coverage'

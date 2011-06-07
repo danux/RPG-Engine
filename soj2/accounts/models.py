@@ -1,7 +1,9 @@
 from django.db import models
+from django.db.models.signals import pre_save
 from django.contrib.auth.models import User, Group
 
 from soj2.accounts.choice_lists import COUNTRIES, TIMEZONES
+from soj2.utils.slug_generator import slug_generator
 
 
 class SocialNetwork(models.Model):
@@ -33,7 +35,9 @@ class UserProfile(models.Model):
     date of birth and a public profile about the player.
     '''
     user = models.OneToOneField(User, unique=True)
-    pen_name = models.CharField(max_length=100, unique=True, db_index=True)
+    name = models.CharField('Pen name', max_length=100, unique=True, 
+                            db_index=True)
+    slug = models.SlugField()
     avatar = models.ImageField(
             blank=True, null=True,
             upload_to="dynamic/accounts/user-profile/avatars")
@@ -53,10 +57,10 @@ class UserProfile(models.Model):
 
     class Meta:
         verbose_name = "author"
-        ordering = ['pen_name']
+        ordering = ['name']
         
     def __unicode__(self):
-        return self.pen_name
+        return self.name
 
 
 class SocialNetworkMembership(models.Model):
@@ -119,3 +123,5 @@ class BlockedUserProfile(models.Model):
     
     class Meta:
         ordering = ["-date_created"]
+
+pre_save.connect(slug_generator, sender=UserProfile)

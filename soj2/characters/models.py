@@ -53,5 +53,5 @@ class Character(models.Model):
             return 'pending'
         else:
             return 'draft'
-        
+
 pre_save.connect(slug_generator, sender=Character)

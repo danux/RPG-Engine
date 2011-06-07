@@ -84,7 +84,7 @@ class Soj2Backend(DefaultBackend):
         
         profile = UserProfile()
         profile.user = new_user
-        profile.pen_name = kwargs['pen_name']
+        profile.name = kwargs['name']
         profile.date_of_birth = kwargs['date_of_birth']
         profile.country = kwargs['country']
         profile.timezone = kwargs['timezone']
