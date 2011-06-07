@@ -8,8 +8,6 @@ from django.db import IntegrityError
 from django.test import TestCase
 from django.test.client import Client
 
-
-
 from soj2.accounts.forms import RegistrationFormWithFields
 from soj2.accounts.models import UserProfile
 from soj2.characters.models import Character
