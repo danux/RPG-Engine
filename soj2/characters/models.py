@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import pre_save
 
+from mcnulty.dashboard.fields import HtmlField
+
 from soj2.accounts.models import UserProfile as Author
 from soj2.utils.slug_generator import slug_generator
 from soj2.world.models import Town, Race, Language
@@ -19,14 +21,14 @@ class Character(models.Model):
     until they have demonstrated the basic understandings of pbp.
     """
     author = models.ForeignKey(Author)
-    name = models.CharField(max_length=100)
-    slug = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True, db_index=True)
+    slug = models.CharField(max_length=100, unique=True, db_index=True)
     race = models.ForeignKey(Race)
     hometown = models.ForeignKey(Town)
     languages = models.ManyToManyField(Language)
     back_story = models.TextField()
     physical_appearence = models.TextField()
-    gm_notes = models.TextField(blank=True, null=True)
+    gm_notes = HtmlField(blank=True, null=True)
     approved_by = models.ForeignKey(User, related_name="approved_characters",
                                     blank=True, null=True)
     date_approved = models.DateTimeField(blank=True, null=True)
@@ -36,10 +38,13 @@ class Character(models.Model):
 
     class Meta:
         ordering = ["name"]
+        permissions = (
+            ("can_moderate", "Can moderate characters"),
+        )
     
     @property
     def is_approved(self):
-        if self.approved_by is not None and self.approved_on is not None:
+        if self.approved_by is not None and self.date_approved is not None:
             return True
         return False
     

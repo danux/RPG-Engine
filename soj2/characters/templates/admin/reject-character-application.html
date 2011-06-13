@@ -1,1 +1,17 @@
-{% extends "admin/change_form.html" %}
+{% extends "admin/base_site.html" %}
+
+{% block title %}Reject Character Application{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  <h1>Reject Character Application</h1>
+  <p>
+    You have chosen to reject {{ character.name }}. Please provide information
+    for the user so they may amend and resubmit their application.
+  </p>
+  <form method="POST" action=".">
+  {{ form.as_p }}
+  <input type="submit" value="Save" />
+  </form>
+</div>
+{% endblock %}

@@ -17,9 +17,19 @@ class CharacterCreationTestCase(TestCase):
     """
     Tests various aspects of creating characters
     """
-    fixtures = ['auth_data.json', 'world_data.json']
+    fixtures = ['world_data.json']
     
     def setUp(self):
+        self.user = User.objects.create_user('test',
+                                             'daniel@amarus.co.uk',
+                                             'test')
+        self.user.is_staff = True
+        self.user.is_superuser = True
+        self.user.save()
+        profile = UserProfile(name='Test',
+                              date_of_birth=datetime.datetime(1986, 8, 16),
+                              user=self.user)
+        profile.save()
         self.client.login(username='test', password='test')
 
     def tearDown(self):
@@ -42,8 +52,7 @@ class CharacterCreationTestCase(TestCase):
             post_data['Submit'] = True
         else:
             post_data['Save'] = True
-        response = self.client.post(
-                                    url, 
+        response = self.client.post(url, 
                                     post_data)
         self.assertEqual(response.status_code, 200)
 
@@ -86,6 +95,7 @@ class CharacterCreationTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
         
     def testSlugGeneration(self):
+        """ Tests that characters are generated a unique slug """
         self.submit_application_form(submit=True,
                                      url=reverse('characters:application-form'))
         
@@ -132,6 +142,47 @@ class CharacterCreationTestCase(TestCase):
     
     def testCharacterApproval(self):
         """
-        Tests that an approved character cannot be modified.
+        Tests that a character application can be approved
         """
-        pass
+        response = self.client.get(reverse(
+                'characters:approve-application-form',
+                args=[1]))
+        self.assertEquals(response.status_code, 404)
+        
+        self.submit_application_form(submit=True,
+                                     url=reverse('characters:application-form'))
+        
+        response = self.client.get(reverse(
+                'characters:approve-application-form',
+                args=[1]))
+        self.assertEquals(response.status_code, 302)
+        
+        character = Character.objects.get(pk=1)
+        self.assertEquals(character.status, 'approved')
+        
+    
+    def testCharacterRejection(self):
+        """
+        Tests that a character application can be rejected
+        """
+        response = self.client.get(reverse(
+                'characters:reject-application-form',
+                args=[1]))
+        self.assertEquals(response.status_code, 404)
+        
+        self.submit_application_form(submit=True,
+                                     url=reverse('characters:application-form'))
+        
+        response = self.client.get(reverse(
+                'characters:reject-application-form',
+                args=[1]))
+        self.assertEquals(response.status_code, 200)
+        
+        response = self.client.post(reverse(
+                'characters:reject-application-form',
+                args=[1]), { 'gm_notes' : 'do not like' })
+        self.assertEquals(response.status_code, 302)
+        
+        character = Character.objects.get(pk=1)
+        
+        self.assertEquals(character.status, 'unsuccessful')

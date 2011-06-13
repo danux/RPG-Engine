@@ -1,7 +1,7 @@
 """Views used by the characters application."""
 from datetime import datetime
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import permission_required
 from django.http import Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -10,7 +10,7 @@ from soj2.characters.forms import ApplicationForm
 from soj2.characters.models import Character
 
 
-@login_required
+@permission_required('characters.can_moderate')
 def application_form(request, character_id=None):
     """
     This views handles the character application process. Users are able to

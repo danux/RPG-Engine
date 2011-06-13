@@ -72,19 +72,9 @@ ADMINS = (
      ('Amarus Support', 'support@amarus.co.uk'),
 )
 
-CHARACTER_GMS = (
-     ('Daniel Davies', 'daniel@amarus.co.uk'),
-)
-
 MANAGERS = ADMINS
 
 TIME_ZONE = 'UTC'
 
 LATEST_NEWS_SLUG = 'blah'
 MIDDLEWARE_CLASSES += ("django.middleware.csrf.CsrfViewMiddleware",)
-
-COVERAGE_CODE_EXCLUDES = [
-    'def __unicode__\(self\):',
-    'def get_absolute_url\(self\):',
-    'from .* import .*', 'import .*',
-]
