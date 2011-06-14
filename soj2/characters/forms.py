@@ -16,4 +16,5 @@ class ApplicationForm(forms.ModelForm):
                   'hometown',
                   'languages', 
                   'back_story',
-                  'physical_appearence']
+                  'physical_appearence',
+                  'avatar']

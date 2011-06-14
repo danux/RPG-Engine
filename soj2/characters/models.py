@@ -28,6 +28,8 @@ class Character(models.Model):
     languages = models.ManyToManyField(Language)
     back_story = models.TextField()
     physical_appearence = models.TextField()
+    avatar = models.ImageField(blank=True, null=True, upload_to=
+                               "dynamic/characters/character/avatars")
     gm_notes = HtmlField(blank=True, null=True)
     approved_by = models.ForeignKey(User, related_name="approved_characters",
                                     blank=True, null=True)
@@ -50,6 +52,11 @@ class Character(models.Model):
     
     @property
     def status(self):
+        '''
+        Calculates the characters current state. This could be stored as
+        an option in the model, but a dynamic solution provides greater
+        flexability and normalisation
+        '''
         if self.is_approved is True:
             return 'approved'
         elif self.gm_notes is not None:

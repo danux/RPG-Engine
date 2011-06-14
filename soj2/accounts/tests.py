@@ -1,7 +1,12 @@
-import os, string, datetime
+import os
+import string
+import datetime
+import re
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
+from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
@@ -27,20 +32,20 @@ class RegistrationTestCase(TestCase):
         Tests that usernames must be unique by attempting to register the same
         username twice
         """
-        user = User.objects.create_user(username='user1', password='pass1', 
-                                                    email='daniel@amarus.co.uk')
-        
-        self.assertRaises(IntegrityError, lambda: User.objects.create_user(
-               username='user1', password='pass1', email='daniel@amarus.co.uk'))
+        user = User.objects.create_user(username='user1',
+                                        password='pass1',
+                                        email='daniel@amarus.co.uk')
 
     def testUniqueName(self):
         """
         Tests that pen names are unique
         """
-        user1 = User.objects.create_user(username='user2', password='pass1', 
-                                                    email='daniel@amarus.co.uk')
-        user2 = User.objects.create_user(username='user3', password='pass1', 
-                                                    email='daniel@amarus.co.uk')
+        user1 = User.objects.create_user(username='user2', 
+                                         password='pass1',
+                                         email='daniel@amarus.co.uk')
+        user2 = User.objects.create_user(username='user3',
+                                         password='pass1',
+                                         email='daniel@amarus.co.uk')
         user_profile1 = UserProfile(user=user1, name='Test', 
                                         date_of_birth=datetime.date.today())
         user_profile1.save()
@@ -106,6 +111,105 @@ class RegistrationTestCase(TestCase):
 
 class MemberInteractionTestCase(TestCase):
     """
-    Tests permissions and block lists
+    Tests how a member can interact with the site and manage their account
     """
-    pass
+    def setUp(self):
+        self.user = User.objects.create_user('test',
+                                             'daniel@amarus.co.uk',
+                                             'test')
+        self.user.is_staff = True
+        self.user.is_superuser = True
+        self.user.save()
+        profile = UserProfile(name='Test',
+                              date_of_birth=datetime.datetime(1986, 8, 16),
+                              user=self.user)
+        profile.save()
+        self.client.login(username='test', password='test')
+    
+    def testUpdatePassword(self):
+        """
+        Test to ensure a user can update their password using a form
+        """
+        response = self.client.get(reverse('accounts:change-password'))
+        self.assertEqual(response.status_code, 200)
+        post_data = {'old_password' : 'test',
+                     'new_password1' : 'password1',
+                     'new_password2' : 'password1'}
+        response = self.client.post(reverse('accounts:change-password'),
+                                    post_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('accounts:change-password-done'))
+        
+        user = authenticate(username='test', password='password1')
+        self.assertEqual(user, self.user)
+    
+    def testUpdateProfile(self):
+        """
+        Test to ensure a user can update their profile and preferences
+        using a form
+        """
+        response = self.client.get(reverse('accounts:update-profile'))
+        self.assertEqual(response.status_code, 200)
+        post_data = {'email' : 'daniel@danux.co.uk',
+                     'timezone' : 'UTC',
+                     'country' : 'GB',
+                     'english_first_language' : 'On',}
+        response = self.client.post(reverse('accounts:update-profile'),
+                                    post_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('accounts:my-account'))
+        
+        # Check the new values are saved
+        updated_user = User.objects.get(pk=1)
+        self.assertEqual(updated_user.email, 'daniel@danux.co.uk')
+        self.assertEqual(updated_user.userprofile.country, 'GB')
+        self.assertEqual(updated_user.userprofile.english_first_language, True)
+    
+    def testForgottenPassword(self):
+        """
+        Test to ensure a user can reset their password using their email
+        address
+        """
+        response = self.client.get(reverse('accounts:password-reset'))
+        self.assertEqual(response.status_code, 200)
+        post_data = {'email' : 'daniel@amarus.co.uk',}
+        response = self.client.post(reverse('accounts:password-reset'),
+                                    post_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('accounts:password-reset-done'))
+
+        response = self.client.get(reverse('accounts:password-reset-done'))
+        self.assertEqual(response.status_code, 200)
+            
+        site = Site.objects.get(id=settings.SITE_ID)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject,
+                         'Password reset on %s' % site.domain)
+        
+        expression = r'^http://(?P<url>.*)/accounts/password-reset-confirm/(?P<uid>[0-9A-Za-z]+)-(?P<token>.+)/$'
+        expression = re.compile(expression)
+        matches = None
+        for line in mail.outbox[0].body.split('\n'):
+            matches = expression.match(line)
+            if matches is not None:
+                break
+            
+        response = self.client.get(reverse('accounts:password-reset-confirm',
+                                           args=[matches.group('uid'),
+                                                   matches.group('token')]))
+        self.assertEqual(response.status_code, 200)  
+        
+        post_data = {'new_password1' : 'password1',
+                     'new_password2' : 'password1'}
+        response = self.client.post(reverse('accounts:password-reset-confirm',
+                                     args=[matches.group('uid'),
+                                           matches.group('token')]),
+                                     post_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response,
+                             reverse('accounts:password-reset-complete'))
+        
+        user = authenticate(username='test', password='password1')
+        self.assertEqual(user, self.user)
+        pass

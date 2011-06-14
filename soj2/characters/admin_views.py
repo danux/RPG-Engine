@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import permission_required
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -12,6 +13,7 @@ from soj2.characters.admin_forms import RejectCharacterApplicationForm
 
 
 @staff_member_required
+@permission_required('characters.can_moderate')
 def reject_application_form(request, character_id=None):
     """
     This views allows a GM to reject a character application form, but they
@@ -45,6 +47,7 @@ def reject_application_form(request, character_id=None):
                               context, RequestContext(request))
     
 @staff_member_required
+@permission_required('characters.can_moderate')
 def approve_application_form(request, character_id=None):
     """
     This view simply approves a character

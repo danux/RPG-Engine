@@ -40,3 +40,16 @@ class RegistrationFormWithFields(RegistrationForm):
             raise forms.ValidationError(
                                 'You must be at least 13 years old to play')
         return self.cleaned_data['date_of_birth']
+
+class UpdateAccountForm(forms.Form):
+    """
+    A form used by users to update their account and author details
+    """
+    email = forms.EmailField()
+    timezone = forms.ChoiceField(choices=TIMEZONES)
+    country = forms.ChoiceField(choices=COUNTRIES)
+    english_first_language = forms.BooleanField(required=False,
+             help_text=("Check this box if English is not your first language. "
+             "This option does not affect play, but allows GMs and other players "
+             " to be more understanding towards authors who do not speak English "
+             "as a native language."))
