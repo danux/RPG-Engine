@@ -2,6 +2,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from django import forms
+from django.contrib.auth.models import User
 from django.forms.extras.widgets import SelectDateWidget
 from registration.forms import RegistrationForm
 
@@ -34,6 +35,16 @@ class RegistrationFormWithFields(RegistrationForm):
                                 "This pen name is already in use. Please select"
                                 " another"))
     
+    def clean_email(self):
+        try:
+            User.objects.get(email=self.cleaned_data['email'])
+        except User.DoesNotExist:
+            return self.cleaned_data['email']
+        else:
+            raise forms.ValidationError((
+                                "This email address is already in use. Please select"
+                                " another"))
+    
     def clean_date_of_birth(self):
         max_dob = date.today() + relativedelta(years=-13)
         if max_dob < self.cleaned_data['date_of_birth']:
@@ -53,3 +64,16 @@ class UpdateAccountForm(forms.Form):
              "This option does not affect play, but allows GMs and other players "
              " to be more understanding towards authors who do not speak English "
              "as a native language."))
+    
+                    
+    def clean_email(self):
+        if self.initial['email'] != self.cleaned_data['email']:
+            try:
+                User.objects.get(email=self.cleaned_data['email'])
+            except User.DoesNotExist:
+                return self.cleaned_data['email']
+            else:
+                raise forms.ValidationError((
+                                    "This email address is already in use. Please select"
+                                    " another"))
+        return self.cleaned_data['email']

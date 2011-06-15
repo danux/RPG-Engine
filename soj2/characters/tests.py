@@ -17,20 +17,15 @@ class CharacterCreationTestCase(TestCase):
     """
     Tests various aspects of creating characters
     """
-    fixtures = ['world_data.json']
+    fixtures = ['world_test_data.json',
+                'accounts_test_data.json',
+                'character_test_data.json']
     
     def setUp(self):
-        self.user = User.objects.create_user('test',
-                                             'daniel@amarus.co.uk',
-                                             'test')
-        self.user.is_staff = True
-        self.user.is_superuser = True
-        self.user.save()
-        profile = UserProfile(name='Test',
-                              date_of_birth=datetime.datetime(1986, 8, 16),
-                              user=self.user)
-        profile.save()
-        self.client.login(username='test', password='test')
+        self.test_admin = User.objects.get(pk=1)
+        self.test_member = User.objects.get(pk=2)
+
+        self.client.login(username="test_member", password='test')
 
     def tearDown(self):
         pass
@@ -144,6 +139,7 @@ class CharacterCreationTestCase(TestCase):
         """
         Tests that a character application can be approved
         """
+        self.client.login(username="test_admin", password='test')
         response = self.client.get(reverse(
                 'characters:approve-application-form',
                 args=[1]))
@@ -165,6 +161,7 @@ class CharacterCreationTestCase(TestCase):
         """
         Tests that a character application can be rejected
         """
+        self.client.login(username="test_admin", password='test')
         response = self.client.get(reverse(
                 'characters:reject-application-form',
                 args=[1]))

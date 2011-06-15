@@ -1,0 +1,58 @@
+[
+    {
+        "pk": 1,
+        "model": "auth.user",
+        "fields": {
+            "username": "test_admin",
+            "first_name": "test",
+            "last_name": "admin",
+            "is_active": true,
+            "is_superuser": true,
+            "is_staff": true,
+            "last_login": "2011-06-06 10:41:08",
+            "groups": [],
+            "user_permissions": [],
+            "password": "sha1$6a85a$595c1e7b287df8d3942dc89864b2cef350dd98c9",
+            "email": "test_admin@example.com",
+            "date_joined": "2011-06-06 10:41:08"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "auth.user",
+        "fields": {
+            "username": "test_member",
+            "first_name": "test",
+            "last_name": "member",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2011-06-06 10:41:08",
+            "groups": [],
+            "user_permissions": [],
+            "password": "sha1$6a85a$595c1e7b287df8d3942dc89864b2cef350dd98c9",
+            "email": "test_member@example.com",
+            "date_joined": "2011-06-06 10:41:08"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "accounts.userprofile",
+        "fields": {
+            "id": 1,
+            "user": 1,
+            "name" : "test admin",
+            "date_of_birth" : "1986-08-16"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "accounts.userprofile",
+        "fields": {
+            "id": 2,
+            "name" : "test member",
+            "user": 2,
+            "date_of_birth" : "1986-08-16"
+        }
+    }
+]

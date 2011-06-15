@@ -3,6 +3,7 @@ import string
 import datetime
 import re
 
+from django.db import IntegrityError
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -21,8 +22,11 @@ class RegistrationTestCase(TestCase):
     """
     Tests various aspects of the registration system
     """
+    fixtures = ['accounts_test_data.json']
+    
     def setUp(self):
-        pass
+        self.test_admin = User.objects.get(pk=1)
+        self.test_member = User.objects.get(pk=2)
 
     def tearDown(self):
         pass
@@ -32,26 +36,32 @@ class RegistrationTestCase(TestCase):
         Tests that usernames must be unique by attempting to register the same
         username twice
         """
-        user = User.objects.create_user(username='user1',
-                                        password='pass1',
-                                        email='daniel@amarus.co.uk')
+        self.assertRaises(IntegrityError,
+                          lambda: User.objects.create_user(username='test_member',
+                                                           password='pass1',
+                                                           email='test_member@example.com'))
 
-    def testUniqueName(self):
+    def testUniqueEmail(self):
+        """
+        Tests that emails are unique
+        """
+        post_data = {
+            'email' : 'test_member@example.com',
+        }
+        response = self.client.post(reverse('accounts:register'), post_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(
+                response,
+                "form", 
+                'email',
+                "This email address is already in use. Please select another")
+
+    def testUniquePenName(self):
         """
         Tests that pen names are unique
         """
-        user1 = User.objects.create_user(username='user2', 
-                                         password='pass1',
-                                         email='daniel@amarus.co.uk')
-        user2 = User.objects.create_user(username='user3',
-                                         password='pass1',
-                                         email='daniel@amarus.co.uk')
-        user_profile1 = UserProfile(user=user1, name='Test', 
-                                        date_of_birth=datetime.date.today())
-        user_profile1.save()
-        
         post_data = {
-            'name' : 'Test',
+            'name' : 'test member',
         }
         response = self.client.post(reverse('accounts:register'), post_data)
         self.assertEqual(response.status_code, 200)
@@ -113,18 +123,12 @@ class MemberInteractionTestCase(TestCase):
     """
     Tests how a member can interact with the site and manage their account
     """
+    fixtures = ['accounts_test_data.json']
+
     def setUp(self):
-        self.user = User.objects.create_user('test',
-                                             'daniel@amarus.co.uk',
-                                             'test')
-        self.user.is_staff = True
-        self.user.is_superuser = True
-        self.user.save()
-        profile = UserProfile(name='Test',
-                              date_of_birth=datetime.datetime(1986, 8, 16),
-                              user=self.user)
-        profile.save()
-        self.client.login(username='test', password='test')
+        self.test_admin = User.objects.get(pk=1)
+        self.test_member = User.objects.get(pk=2)
+        self.client.login(username='test_member', password='test')
     
     def testUpdatePassword(self):
         """
@@ -140,8 +144,8 @@ class MemberInteractionTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('accounts:change-password-done'))
         
-        user = authenticate(username='test', password='password1')
-        self.assertEqual(user, self.user)
+        user = authenticate(username='test_member', password='password1')
+        self.assertEqual(user, self.test_member)
     
     def testUpdateProfile(self):
         """
@@ -150,7 +154,7 @@ class MemberInteractionTestCase(TestCase):
         """
         response = self.client.get(reverse('accounts:update-profile'))
         self.assertEqual(response.status_code, 200)
-        post_data = {'email' : 'daniel@danux.co.uk',
+        post_data = {'email' : 'test_member_new@example.com',
                      'timezone' : 'UTC',
                      'country' : 'GB',
                      'english_first_language' : 'On',}
@@ -160,10 +164,24 @@ class MemberInteractionTestCase(TestCase):
         self.assertRedirects(response, reverse('accounts:my-account'))
         
         # Check the new values are saved
-        updated_user = User.objects.get(pk=1)
-        self.assertEqual(updated_user.email, 'daniel@danux.co.uk')
+        updated_user = User.objects.get(pk=2)
+        self.assertEqual(updated_user.email, 'test_member_new@example.com')
         self.assertEqual(updated_user.userprofile.country, 'GB')
         self.assertEqual(updated_user.userprofile.english_first_language, True)
+        
+    def testUniqueEmail(self):
+        """
+        Tests that emails are unique
+        """
+        post_data = {'email' : 'test_admin@example.com',
+                     'timezone' : 'UTC',
+                     'country' : 'GB',
+                     'english_first_language' : 'On',}
+        response = self.client.post(reverse('accounts:register'), post_data)
+        self.assertFormError(response,
+                             "form", 
+                             "email",
+                             "This email address is already in use. Please select another")
     
     def testForgottenPassword(self):
         """
@@ -172,7 +190,7 @@ class MemberInteractionTestCase(TestCase):
         """
         response = self.client.get(reverse('accounts:password-reset'))
         self.assertEqual(response.status_code, 200)
-        post_data = {'email' : 'daniel@amarus.co.uk',}
+        post_data = {'email' : 'test_member@example.com',}
         response = self.client.post(reverse('accounts:password-reset'),
                                     post_data)
         self.assertEqual(response.status_code, 302)
@@ -210,26 +228,20 @@ class MemberInteractionTestCase(TestCase):
         self.assertRedirects(response,
                              reverse('accounts:password-reset-complete'))
         
-        user = authenticate(username='test', password='password1')
-        self.assertEqual(user, self.user)
+        user = authenticate(username='test_member', password='password1')
+        self.assertEqual(user, self.test_member)
         pass
     
 class UserPrivacyTestCase(TestCase):
     """
     Tests how a member can interact with the site and manage their account
     """
+    fixtures = ['accounts_test_data.json']
+
     def setUp(self):
-        self.user = User.objects.create_user('test',
-                                             'daniel@amarus.co.uk',
-                                             'test')
-        self.user.is_staff = True
-        self.user.is_superuser = True
-        self.user.save()
-        profile = UserProfile(name='Test',
-                              date_of_birth=datetime.datetime(1986, 8, 16),
-                              user=self.user)
-        profile.save()
-        self.client.login(username='test', password='test')
+        self.test_admin = User.objects.get(pk=1)
+        self.test_member = User.objects.get(pk=2)
+        self.client.login(username='test_member', password='test')
         
         self.game_permission = GamePermission()
         self.game_permission.type = 'profile'
@@ -244,44 +256,44 @@ class UserPrivacyTestCase(TestCase):
         """
         Simply test that a permission can be added by key value
         """
-        self.user.userprofile.add_permission_by_key('profile_email', 'friend')
-        self.user.userprofile.add_permission_by_key('profile_email', 'guild')
+        self.test_member.userprofile.add_permission_by_key('profile_email', 'friend')
+        self.test_member.userprofile.add_permission_by_key('profile_email', 'guild')
 
         self.assertTrue(
-                self.user.userprofile.has_permission_by_key('profile_email', 
-                                                            'guild'))
+                self.test_member.userprofile.has_permission_by_key('profile_email', 
+                                                                   'guild'))
 
         self.assertTrue(
-                self.user.userprofile.has_permission_by_key('profile_email', 
-                                                            'friend'))
+                self.test_member.userprofile.has_permission_by_key('profile_email', 
+                                                                   'friend'))
 
         self.assertFalse(
-                self.user.userprofile.has_permission_by_key('profile_email', 
-                                                            'member'))
+                self.test_member.userprofile.has_permission_by_key('profile_email', 
+                                                                   'member'))
 
     def testInvalidPermissionByKey(self):
         """
         Tests permission key error handling
         """
         self.assertRaises(GamePermission.DoesNotExist,
-                          lambda: self.user.userprofile.add_permission_by_key(
+                          lambda: self.test_member.userprofile.add_permission_by_key(
                                   'profile_fake', 'friend'))
                           
         self.assertRaises(GamePermission.BadPermissionValue,
-                          lambda: self.user.userprofile.add_permission_by_key(
+                          lambda: self.test_member.userprofile.add_permission_by_key(
                                   'profile_email', 'bad_choice'))
         
-        self.user.userprofile.add_permission_by_key('profile_email', 'friend')
+        self.test_member.userprofile.add_permission_by_key('profile_email', 'friend')
         self.assertRaises(GamePermission.DuplicatePermissionValue,
-                          lambda: self.user.userprofile.add_permission_by_key(
+                          lambda: self.test_member.userprofile.add_permission_by_key(
                                   'profile_email', 'friend'))
 
     def testClearPermissions(self):
         """
         Tests the permission reset button performs as expected
         """
-        self.user.userprofile.add_permission_by_key('profile_email', 'friend')
-        self.user.userprofile.clear_permissions()
+        self.test_member.userprofile.add_permission_by_key('profile_email', 'friend')
+        self.test_member.userprofile.clear_permissions()
         self.assertFalse(
-                self.user.userprofile.has_permission_by_key('profile_email', 
-                                                            'friend'))                          
+                self.test_member.userprofile.has_permission_by_key('profile_email', 
+                                                                   'friend'))                          

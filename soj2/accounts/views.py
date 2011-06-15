@@ -20,8 +20,12 @@ def update_profile(request):
     This view allows a user to update their account and change their
     email address
     """
+    data = {'email' : request.user.email,
+            'timezone' : request.user.userprofile.timezone,
+            'country' : request.user.userprofile.country,
+            'english_first_language' :  request.user.userprofile.english_first_language, }
     if request.method == 'POST':
-        form = UpdateAccountForm(request.POST)
+        form = UpdateAccountForm(request.POST, initial=data)
         if form.is_valid():
                 request.user.email = form.cleaned_data['email']
                 request.user.userprofile.timezone = form.cleaned_data['timezone']
@@ -31,11 +35,7 @@ def update_profile(request):
                 request.user.save()
                 return HttpResponseRedirect(reverse('accounts:my-account'))
     else:
-        data = {'email' : request.user.email,
-                'timezone' : request.user.userprofile.timezone,
-                'country' : request.user.userprofile.country,
-                'english_first_language' :  request.user.userprofile.english_first_language, }
-        form = UpdateAccountForm()
+        form = UpdateAccountForm(initial=data)
 
     context = { 'form' : form }
     return render_to_response("accounts/update-profile.html", 

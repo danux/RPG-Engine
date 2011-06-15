@@ -1,0 +1,40 @@
+[
+    {
+        "pk": 1,
+        "model": "characters.character",
+        "fields": {
+            "author": 3,
+            "name": "test",
+            "slug": "test",
+            "race" : 2,
+            "hometown" : 4,
+            "languages" : [1],
+            "back_story" : "N/a",
+            "physical_appearence" : "N/a",
+            "avatar" : "",
+            "gm_notes" "",
+            "approved_by" : 1,
+            "date_approved": "2011-06-06 10:41:08",
+            "date_submitted": "2011-06-06 10:41:08"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "characters.character",
+        "fields": {
+            "author": 3,
+            "name": "test_two",
+            "slug": "test_two",
+            "race" : 2,
+            "hometown" : 4,
+            "languages" : [1],
+            "back_story" : "N/a",
+            "physical_appearence" : "N/a",
+            "avatar" : "",
+            "gm_notes" "",
+            "approved_by" : 1,
+            "date_approved": "2011-06-06 10:41:08",
+            "date_submitted": "2011-06-06 10:41:08"
+        }
+    }
+]

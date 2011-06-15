@@ -1,0 +1,78 @@
+[{
+    "pk": 1,
+    "model":
+    "world.worldnode",
+    "fields": {
+        "name": "Gar'lan",
+        "date_modified": "2011-06-06 10:34:40",
+        "image": "",
+        "date_created": "2011-06-06 10:34:40",
+        "slug": "garlan",
+        "description": "<p>Ancient language of the Gor'lok people</p>"
+    }
+},
+{
+    "pk": 2,
+    "model": "world.worldnode",
+    "fields": {
+        "name": "Gar'lok",
+        "date_modified": "2011-06-06 10:35:23",
+        "image": "",
+        "date_created": "2011-06-06 10:35:23",
+        "slug": "garlok",
+        "description": "<p>Ancient lizard race, rullers of all</p>"
+    }
+},
+{
+    "pk": 3,
+    "model": "world.worldnode",
+    "fields": {
+        "name": "Gar'lok Nation",
+        "date_modified": "2011-06-06 11:12:50",
+        "image": "",
+        "date_created": "2011-06-06 11:12:50",
+        "slug": "garlok-nation", "description":
+        "<p>Gar'lok great and mighty nation</p>"
+    }
+}, 
+{
+    "pk": 4,
+    "model": "world.worldnode",
+    "fields": {
+        "name": "Gar'lok Town",
+        "date_modified": "2011-06-06 11:12:52",
+        "image": "",
+        "date_created": "2011-06-06 11:12:52",
+        "slug": "garlok-town",
+        "description": "<p>Town of Gar'lok</p>"
+    }
+},
+{
+    "pk": 1,
+    "model": "world.language",
+    "fields": {
+    }
+},
+{
+    "pk": 3,
+    "model": "world.nation",
+    "fields": {
+    }
+},
+{
+    "pk": 2,
+    "model": "world.race",
+    "fields": {
+        "characteristics": "<p>Lots</p>",
+        "physical_appearence": "<p>Ugly</p>",
+        "traditions": "<p>Many</p>"
+    }
+},
+{
+    "pk": 4,
+    "model": "world.town",
+    "fields": {
+        "is_newbie_friendly": true,
+        "nation": 3
+    }
+}]
