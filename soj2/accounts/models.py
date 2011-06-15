@@ -5,6 +5,7 @@ from django.contrib.auth.models import User, Group
 from mcnulty.dashboard.fields import HtmlField
 
 from soj2.accounts.choice_lists import COUNTRIES, TIMEZONES, PERMISSION_TYPES
+from soj2.accounts.choice_lists import PERMISSION_VALUES
 from soj2.utils.slug_generator import slug_generator
 
 
@@ -34,5 +35,72 @@ class UserProfile(models.Model):
         
     def __unicode__(self):
         return self.name
+        
+    def add_permission(self, game_permission, value):
+        if self.has_permission(game_permission, value):
+            raise GamePermission.DuplicatePermissionValue()
+        
+        if not any(value in x for x in PERMISSION_VALUES):
+            raise GamePermission.BadPermissionValue()
+        
+        set_permission = UserProfilePermission()
+        set_permission.game_permission = game_permission
+        set_permission.value = value
+        set_permission.user_profile = self
+        set_permission.save()
+        
+    def has_permission(self, game_permission, value):
+        try:
+            set_permission = UserProfilePermission.objects.get(user_profile=self,
+                                                               game_permission=game_permission,
+                                                               value=value)
+        except UserProfilePermission.DoesNotExist:
+            return False
+        else:
+            return True
+    
+    def add_permission_by_key(self, key, value):
+        try:
+            game_permission = GamePermission.objects.get(key=key)
+        except GamePermission.DoesNotExist, e:
+            raise e
+
+        self.add_permission(game_permission, value)
+
+    def has_permission_by_key(self, key, value):
+        try:
+            game_permission = GamePermission.objects.get(key=key)
+        except GamePermission.DoesNotExist, e:
+            raise e
+        
+        return self.has_permission(game_permission, value)
+    
+    def clear_permissions(self):
+        self.userprofilepermission_set.all().delete()
+
+
+class GamePermission(models.Model):
+    """
+    Class defining various user permissions
+    """
+    type = models.CharField(max_length=100, choices=PERMISSION_TYPES)
+    name = models.CharField(max_length=100)
+    key = models.CharField(max_length=100)
+
+    class BadPermissionValue(Exception):
+        pass
+
+    class DuplicatePermissionValue(Exception):
+        pass
+
+    
+class UserProfilePermission(models.Model):
+    """
+    Class defining the link between a userprofile and a permission, with a 
+    value
+    """
+    user_profile = models.ForeignKey(UserProfile)
+    game_permission = models.ForeignKey(GamePermission)
+    value = models.CharField(max_length=100, choices=PERMISSION_VALUES)
 
 pre_save.connect(slug_generator, sender=UserProfile)

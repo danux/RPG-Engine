@@ -14,7 +14,7 @@ from django.test import TestCase
 from django.test.client import Client
 
 from soj2.accounts.forms import RegistrationFormWithFields
-from soj2.accounts.models import UserProfile
+from soj2.accounts.models import UserProfile, GamePermission
 
 
 class RegistrationTestCase(TestCase):
@@ -213,3 +213,75 @@ class MemberInteractionTestCase(TestCase):
         user = authenticate(username='test', password='password1')
         self.assertEqual(user, self.user)
         pass
+    
+class UserPrivacyTestCase(TestCase):
+    """
+    Tests how a member can interact with the site and manage their account
+    """
+    def setUp(self):
+        self.user = User.objects.create_user('test',
+                                             'daniel@amarus.co.uk',
+                                             'test')
+        self.user.is_staff = True
+        self.user.is_superuser = True
+        self.user.save()
+        profile = UserProfile(name='Test',
+                              date_of_birth=datetime.datetime(1986, 8, 16),
+                              user=self.user)
+        profile.save()
+        self.client.login(username='test', password='test')
+        
+        self.game_permission = GamePermission()
+        self.game_permission.type = 'profile'
+        self.game_permission.key = 'profile_email'
+        self.game_permission.name = 'View email address'
+        self.game_permission.save()
+
+    """
+    Tests the UserPrivacy settings module
+    """
+    def testAddingPermissionByKey(self):
+        """
+        Simply test that a permission can be added by key value
+        """
+        self.user.userprofile.add_permission_by_key('profile_email', 'friend')
+        self.user.userprofile.add_permission_by_key('profile_email', 'guild')
+
+        self.assertTrue(
+                self.user.userprofile.has_permission_by_key('profile_email', 
+                                                            'guild'))
+
+        self.assertTrue(
+                self.user.userprofile.has_permission_by_key('profile_email', 
+                                                            'friend'))
+
+        self.assertFalse(
+                self.user.userprofile.has_permission_by_key('profile_email', 
+                                                            'member'))
+
+    def testInvalidPermissionByKey(self):
+        """
+        Tests permission key error handling
+        """
+        self.assertRaises(GamePermission.DoesNotExist,
+                          lambda: self.user.userprofile.add_permission_by_key(
+                                  'profile_fake', 'friend'))
+                          
+        self.assertRaises(GamePermission.BadPermissionValue,
+                          lambda: self.user.userprofile.add_permission_by_key(
+                                  'profile_email', 'bad_choice'))
+        
+        self.user.userprofile.add_permission_by_key('profile_email', 'friend')
+        self.assertRaises(GamePermission.DuplicatePermissionValue,
+                          lambda: self.user.userprofile.add_permission_by_key(
+                                  'profile_email', 'friend'))
+
+    def testClearPermissions(self):
+        """
+        Tests the permission reset button performs as expected
+        """
+        self.user.userprofile.add_permission_by_key('profile_email', 'friend')
+        self.user.userprofile.clear_permissions()
+        self.assertFalse(
+                self.user.userprofile.has_permission_by_key('profile_email', 
+                                                            'friend'))                          
