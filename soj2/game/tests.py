@@ -14,18 +14,27 @@ from django.test import TestCase
 from django.test.client import Client
 
 from soj2.game.models import Quest
+from soj2.characters.models import Character
+from soj2.world.models import Town
 
 class QuestModelTestCase(TestCase):
     """
     Tests basic functionality of the Quests model
     """
-    fixtures = ['quest-test-data.json']
+    fixtures = ['world_test_data.json',
+                'accounts_test_data.json',
+                'characters_test_data.json',
+                'game_test_data.json']
     
     def setUp(self):
         """
         Sets up the initial data that is used by the characters app
         """
         self.test_admin = User.objects.get(username='test_admin')
+        self.character_one = Character.objects.get(pk=1)
+        self.character_two = Character.objects.get(pk=2)
+        self.town_one = Town.objects.get(pk=4)
+        self.quest_one = Quest.objects.get(pk=1)
     
     def testCreateQuests(self):
         """
@@ -33,23 +42,21 @@ class QuestModelTestCase(TestCase):
         """
         quest = Quest()
         quest.name = "Test Quest"
-        quest.town = self.town_1
+        quest.town = self.town_one
         quest.is_open = True
         quest.save()
         
         quest.add_character(self.character_one)
-        
-        self.assertEqual(quest.current_members[0], self.character_one)
-        self.assertEqual(quest.current_members.count(), 1)
+        self.assertTrue(quest.has_character(self.character_one))
+        self.assertEqual(quest.current_characters.count(), 1)
     
     def testJoinQuests(self):
         """
         Tests that a user can join a quest
         """
-        self.quest_one.add_character(self.character_two)
-        
-        self.assertEqual(quest.current_members[-1], self.character_two)
-        self.assertEqual(quest.current_members.count(), 2)
+        self.quest_one.add_character(self.character_one)
+        self.assertTrue(self.quest_one.has_character(self.character_one))
+        self.assertEqual(self.quest_one.current_characters.count(), 1)
     
     def testOnlyOneQuest(self):
         """
@@ -63,9 +70,10 @@ class QuestModelTestCase(TestCase):
         """
         Tests that a user can leave a quest, and then join another
         """
+        self.quest_one.add_character(self.character_one)
         self.quest_one.add_character(self.character_two)
         self.quest_one.remove_character(self.character_two)
-        self.assertEqual(self.quest.count(), 1)
+        self.assertEqual(self.quest_one.current_characters.count(), 1)
     
     def testLeaveQuestAutoNewLeader(self):
         """

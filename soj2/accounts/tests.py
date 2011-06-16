@@ -235,6 +235,7 @@ class MemberInteractionTestCase(TestCase):
 class UserPrivacyTestCase(TestCase):
     """
     Tests how a member can interact with the site and manage their account
+    privacy options
     """
     fixtures = ['accounts_test_data.json']
 
@@ -249,9 +250,6 @@ class UserPrivacyTestCase(TestCase):
         self.game_permission.name = 'View email address'
         self.game_permission.save()
 
-    """
-    Tests the UserPrivacy settings module
-    """
     def testAddingPermissionByKey(self):
         """
         Simply test that a permission can be added by key value

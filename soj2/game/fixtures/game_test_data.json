@@ -1,0 +1,12 @@
+[
+    {
+        "pk": 1,
+        "model": "game.quest",
+        "fields": {
+            "name": "test_quest",
+            "slug": "test_quest",
+            "is_open": true,
+            "town" : 4
+        }
+    }
+]
