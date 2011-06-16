@@ -13,7 +13,7 @@ from django.db import IntegrityError
 from django.test import TestCase
 from django.test.client import Client
 
-from soj2.game.models import Quest
+from soj2.game.models import Quest, QuestMembership
 from soj2.characters.models import Character
 from soj2.world.models import Town
 
@@ -65,6 +65,13 @@ class QuestModelTestCase(TestCase):
         self.quest_one.add_character(self.character_two)
         self.assertRaises(Quest.MultipleQuestsException,
                           lambda: self.quest_one.add_character(self.character_two))
+    
+    def testCannotLeaveQuestNotOn(self):
+        """
+        Tests that a user cannot leave a quest they are not on
+        """
+        self.assertRaises(QuestMembership.DoesNotExist,
+                          lambda: self.quest_one.remove_character(self.character_one))
     
     def testLeaveQuest(self):
         """

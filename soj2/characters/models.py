@@ -7,7 +7,7 @@ from mcnulty.dashboard.fields import HtmlField
 
 from soj2.accounts.models import UserProfile as Author
 from soj2.utils.slug_generator import slug_generator
-from soj2.world.models import Town, Race, Language
+from soj2.world.models import Town, Race
 
 
 class Character(models.Model):
@@ -25,7 +25,6 @@ class Character(models.Model):
     slug = models.CharField(max_length=100, unique=True, db_index=True)
     race = models.ForeignKey(Race)
     hometown = models.ForeignKey(Town)
-    languages = models.ManyToManyField(Language)
     back_story = models.TextField()
     physical_appearence = models.TextField()
     avatar = models.ImageField(blank=True, null=True, upload_to=

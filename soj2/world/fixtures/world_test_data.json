@@ -1,16 +1,4 @@
-[{
-    "pk": 1,
-    "model":
-    "world.worldnode",
-    "fields": {
-        "name": "Gar'lan",
-        "date_modified": "2011-06-06 10:34:40",
-        "image": "",
-        "date_created": "2011-06-06 10:34:40",
-        "slug": "garlan",
-        "description": "<p>Ancient language of the Gor'lok people</p>"
-    }
-},
+[
 {
     "pk": 2,
     "model": "world.worldnode",
@@ -45,12 +33,6 @@
         "date_created": "2011-06-06 11:12:52",
         "slug": "garlok-town",
         "description": "<p>Town of Gar'lok</p>"
-    }
-},
-{
-    "pk": 1,
-    "model": "world.language",
-    "fields": {
     }
 },
 {

@@ -177,7 +177,7 @@ class MemberInteractionTestCase(TestCase):
                      'timezone' : 'UTC',
                      'country' : 'GB',
                      'english_first_language' : 'On',}
-        response = self.client.post(reverse('accounts:register'), post_data)
+        response = self.client.post(reverse('accounts:update-profile'), post_data)
         self.assertFormError(response,
                              "form", 
                              "email",
@@ -285,6 +285,10 @@ class UserPrivacyTestCase(TestCase):
         self.assertRaises(GamePermission.DuplicatePermissionValue,
                           lambda: self.test_member.userprofile.add_permission_by_key(
                                   'profile_email', 'friend'))
+        
+        self.assertRaises(GamePermission.DoesNotExist,
+                          lambda: self.test_member.userprofile.has_permission_by_key(
+                                  'profile_fake', 'friend'))
 
     def testClearPermissions(self):
         """

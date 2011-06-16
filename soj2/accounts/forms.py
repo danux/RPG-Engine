@@ -64,14 +64,13 @@ class UpdateAccountForm(forms.Form):
              "This option does not affect play, but allows GMs and other players "
              " to be more understanding towards authors who do not speak English "
              "as a native language."))
-    
                     
     def clean_email(self):
         if self.initial['email'] != self.cleaned_data['email']:
             try:
                 User.objects.get(email=self.cleaned_data['email'])
             except User.DoesNotExist:
-                return self.cleaned_data['email']
+                pass
             else:
                 raise forms.ValidationError((
                                     "This email address is already in use. Please select"

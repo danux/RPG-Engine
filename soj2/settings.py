@@ -54,7 +54,8 @@ INSTALLED_APPS += ("sorl.thumbnail",
                    "soj2.accounts",
                    "soj2.characters",
                    "soj2.world",
-                   "soj2.utils")
+                   "soj2.utils",
+                   "soj2.game")
 
 ACCOUNT_ACTIVATION_DAYS = 7
 

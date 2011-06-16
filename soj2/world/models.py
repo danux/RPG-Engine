@@ -18,12 +18,6 @@ class WorldNode(models.Model):
     def __unicode__(self):
         return self.name
     
-class Language(WorldNode):
-    """
-    Model representing a langugage in the game.
-    """
-    pass
-    
 class Nation(WorldNode):
     """
     Model representing a nation in the game.

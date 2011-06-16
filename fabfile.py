@@ -47,4 +47,7 @@ def deploy():
 
 def test():
     """ Tests the project locally """
-    management.call_command('test_coverage', 'characters', 'accounts')
+    management.call_command('test_coverage',
+                            'accounts',
+                            'characters',
+                            'game')

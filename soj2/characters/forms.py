@@ -14,7 +14,6 @@ class ApplicationForm(forms.ModelForm):
         fields =['name',
                   'race',
                   'hometown',
-                  'languages', 
                   'back_story',
                   'physical_appearence',
                   'avatar']

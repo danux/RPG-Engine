@@ -35,7 +35,7 @@ class Quest(models.Model):
         else:
             return True
     
-    def add_character(self, character, leader=False):
+    def add_character(self, character, is_leader=False):
         """
         Adds a character to a quest, and raises an exception is the
         character is already on the quest
@@ -44,7 +44,7 @@ class Quest(models.Model):
             raise Quest.MultipleQuestsException
         quest_membership = QuestMembership.objects.create(quest=self,
                                                           character=character,
-                                                          leader=leader)
+                                                          is_leader=is_leader)
         quest_membership.save()
     
     def remove_character(self, character):

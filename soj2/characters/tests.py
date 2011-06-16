@@ -38,7 +38,6 @@ class CharacterCreationTestCase(TestCase):
         post_data = {
             'physical_appearence' : 'test_appearance',
             'back_story' : 'test_back_story',
-            'languages' : 1,
             'race' : 2,
             'hometown' : 4,
             'name' : 'Test Name',
@@ -97,7 +96,6 @@ class CharacterCreationTestCase(TestCase):
         post_data = {
             'physical_appearence' : 'test_appearance',
             'back_story' : 'test_back_story',
-            'languages' : 1,
             'race' : 2,
             'hometown' : 4,
             'name' : 'Test-Name',
@@ -110,7 +108,6 @@ class CharacterCreationTestCase(TestCase):
         post_data = {
             'physical_appearence' : 'test_appearance',
             'back_story' : 'test_back_story',
-            'languages' : 1,
             'race' : 2,
             'hometown' : 4,
             'name' : 'Test  Name',
