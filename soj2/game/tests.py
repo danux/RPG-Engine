@@ -82,28 +82,85 @@ class QuestModelTestCase(TestCase):
         self.quest_one.remove_character(self.character_two)
         self.assertEqual(self.quest_one.current_characters.count(), 1)
     
+    def testQuestAutoQuestLeadership(self):
+        """
+        Tests that a user can leave a quest, and then join another
+        """
+        self.quest_one.add_character(self.character_one)
+        self.assertTrue(self.quest_one.is_leader(self.character_one))
+    
+    def testQuestLeadership(self):
+        """
+        Tests that a user can leave a quest, and then join another
+        """
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.add_character(self.character_two, True)
+        self.assertTrue(self.quest_one.is_leader(self.character_one))
+    
     def testLeaveQuestAutoNewLeader(self):
         """
         Tests that when a quest leader leaves the quest, the next longest
         standing member of the quest becomes the quest leader
         """
-        pass
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.add_character(self.character_two)
+        self.assertFalse(self.quest_one.is_leader(self.character_two))
+        self.quest_one.remove_character(self.character_one)
+        self.assertTrue(self.quest_one.is_leader(self.character_two))
 
     def testCloseQuest(self):
         """
         Tests that when a quest is closed that no further members can join
         """
-        pass
+        self.quest_one.is_open = False
+        self.assertRaises(Quest.QuestClosed,
+                          lambda: self.quest_one.add_character(self.character_one))
     
     def testAutoCloseQuest(self):
         """
         Tests that a quest with no members automatically closes
         """
-        pass
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.remove_character(self.character_one)
+        self.assertFalse(self.quest_one.is_open)
     
-    def testRejoinQuet(self):
+    def testRejoinQuest(self):
         """
-        Tests that when a user leaves and quest and rejoins, the history
+        Tests that when a user leaves a quest and rejoins, the history
         is correctly maintained
         """
-        pass
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.add_character(self.character_two)
+        self.quest_one.remove_character(self.character_one)
+        self.quest_one.add_character(self.character_one)
+        self.assertEqual(self.quest_one.questmembership_set.count(), 3)
+    
+    def testMakeLeader(self):
+        """
+        Tests that a member of a quest can be promoted to quest leader
+        """
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.add_character(self.character_two)
+        self.quest_one.make_leader(self.character_two)
+        self.assertEqual(self.quest_one.current_leaders.count(), 2)
+    
+    def testMakeLeaderBoundaries(self):
+        """
+        Tests the boundaries of adding leaders, and checks all exceptions
+        fire correctly for their given scenario
+        """
+        self.quest_one.add_character(self.character_one)
+        self.assertRaises(Quest.MultipleLeaderException,
+                          lambda: self.quest_one.make_leader(self.character_one))
+        
+        self.quest_one.add_character(self.character_two)
+        self.quest_one.is_open = False
+        self.assertRaises(Quest.QuestClosed,
+                          lambda: self.quest_one.make_leader(self.character_two))
+        
+        self.quest_one.remove_character(self.character_two)
+        self.quest_one.is_open = True
+        self.assertRaises(QuestMembership.DoesNotExist,
+                          lambda: self.quest_one.make_leader(self.character_two))
+
+        
