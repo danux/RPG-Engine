@@ -36,6 +36,16 @@ class Quest(models.Model):
     def current_leaders(self):
         return self.current_characters.filter(is_leader=True)
     
+    @staticmethod
+    def available_characters_by_user(user):
+        """
+        Returns all of the available characters for a given user. I.e.
+        the characters are not currently on a quest
+        """
+        return user.userprofile.character_set.exclude(
+            questmembership__date_left__isnull=True,
+            questmembership__pk__isnull=False)
+    
     def has_character(self, character):
         """
         Returns true or false if a character is on a quest

@@ -20,12 +20,6 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('world', ['WorldNode'])
 
-        # Adding model 'Language'
-        db.create_table('world_language', (
-            ('worldnode_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['world.WorldNode'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('world', ['Language'])
-
         # Adding model 'Nation'
         db.create_table('world_nation', (
             ('worldnode_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['world.WorldNode'], unique=True, primary_key=True)),
@@ -56,9 +50,6 @@ class Migration(SchemaMigration):
         # Deleting model 'WorldNode'
         db.delete_table('world_worldnode')
 
-        # Deleting model 'Language'
-        db.delete_table('world_language')
-
         # Deleting model 'Nation'
         db.delete_table('world_nation')
 
@@ -70,10 +61,6 @@ class Migration(SchemaMigration):
 
 
     models = {
-        'world.language': {
-            'Meta': {'object_name': 'Language', '_ormbases': ['world.WorldNode']},
-            'worldnode_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['world.WorldNode']", 'unique': 'True', 'primary_key': 'True'})
-        },
         'world.nation': {
             'Meta': {'object_name': 'Nation', '_ormbases': ['world.WorldNode']},
             'worldnode_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['world.WorldNode']", 'unique': 'True', 'primary_key': 'True'})

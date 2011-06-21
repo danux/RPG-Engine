@@ -27,22 +27,10 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('characters', ['Character'])
 
-        # Adding M2M table for field languages on 'Character'
-        db.create_table('characters_character_languages', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('character', models.ForeignKey(orm['characters.character'], null=False)),
-            ('language', models.ForeignKey(orm['world.language'], null=False))
-        ))
-        db.create_unique('characters_character_languages', ['character_id', 'language_id'])
-
-
     def backwards(self, orm):
         
         # Deleting model 'Character'
         db.delete_table('characters_character')
-
-        # Removing M2M table for field languages on 'Character'
-        db.delete_table('characters_character_languages')
 
 
     models = {
@@ -140,7 +128,6 @@ class Migration(SchemaMigration):
             'gm_notes': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'hometown': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['world.Town']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'languages': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['world.Language']", 'symmetrical': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'physical_appearence': ('django.db.models.fields.TextField', [], {}),
             'race': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['world.Race']"}),
@@ -152,10 +139,6 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        'world.language': {
-            'Meta': {'object_name': 'Language', '_ormbases': ['world.WorldNode']},
-            'worldnode_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['world.WorldNode']", 'unique': 'True', 'primary_key': 'True'})
         },
         'world.nation': {
             'Meta': {'object_name': 'Nation', '_ormbases': ['world.WorldNode']},

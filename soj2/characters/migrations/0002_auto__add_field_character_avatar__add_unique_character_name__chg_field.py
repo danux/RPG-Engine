@@ -121,7 +121,6 @@ class Migration(SchemaMigration):
             'gm_notes': ('mcnulty.dashboard.fields.HtmlField', [], {'null': 'True', 'blank': 'True'}),
             'hometown': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['world.Town']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'languages': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['world.Language']", 'symmetrical': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100', 'db_index': 'True'}),
             'physical_appearence': ('django.db.models.fields.TextField', [], {}),
             'race': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['world.Race']"}),
@@ -133,10 +132,6 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        'world.language': {
-            'Meta': {'object_name': 'Language', '_ormbases': ['world.WorldNode']},
-            'worldnode_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['world.WorldNode']", 'unique': 'True', 'primary_key': 'True'})
         },
         'world.nation': {
             'Meta': {'object_name': 'Nation', '_ormbases': ['world.WorldNode']},
