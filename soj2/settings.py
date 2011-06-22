@@ -42,9 +42,10 @@ LOGIN_REDIRECT_URL = '/accounts/login/'
 
 # Misc settings
 AUTH_PROFILE_MODULE = 'accounts.UserProfile'
+
 TIME_ZONE = 'UTC'
 
-# Misc Database
+#  Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
