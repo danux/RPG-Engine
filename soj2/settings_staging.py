@@ -1,0 +1,1 @@
+from soj2.settings import *
