@@ -10,9 +10,9 @@ django-reversion
 sorl-thumbnail
 django-debug-toolbar
 south
-django-registration
 pytz
 python-dateutil
 django-coverage
 gondor==1.0b1.post9
 psycopg2==2.4.1
+hg+https://bitbucket.org/ubernostrum/django-registration#egg=registration
