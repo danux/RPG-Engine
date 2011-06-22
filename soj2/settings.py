@@ -4,8 +4,11 @@ from mcnulty.settings import *
 
 
 PROJECT_ROOT = os.path.dirname(__file__)
-MEDIA_ROOT = os.path.join(PROJECT_ROOT, "media")
-TEMPLATE_DIRS = (os.path.join(PROJECT_ROOT, "templates"),) + TEMPLATE_DIRS
+STATIC_ROOT = os.path.join(PROJECT_ROOT, "../static-files")
+MEDIA_ROOT = os.path.join(PROJECT_ROOT, "../media")
+TEMPLATE_DIRS = (os.path.join(PROJECT_ROOT, "../templates"),) + TEMPLATE_DIRS
+STATIC_URL = '/static-files/'
+STATIC_URL = '/media/'
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
