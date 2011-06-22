@@ -45,7 +45,8 @@ DEFAULT_FROM_EMAIL = "daniel@amarus.co.uk"
 # This setting installs the base set of Vertex applications.  Add your own
 # custom applications to enable additional functionality for your site.
 
-INSTALLED_APPS += ("sorl.thumbnail",
+INSTALLED_APPS += ("django.contrib.staticfiles",
+                   "sorl.thumbnail",
                    "registration",
                    "django_coverage",
                    "mcnulty.contentpages",
@@ -79,3 +80,4 @@ TIME_ZONE = 'UTC'
 
 LATEST_NEWS_SLUG = 'blah'
 MIDDLEWARE_CLASSES += ("django.middleware.csrf.CsrfViewMiddleware",)
+TEMPLATE_CONTEXT_PROCESSORS += ("django.core.context_processors.static",)
