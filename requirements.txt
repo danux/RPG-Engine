@@ -12,5 +12,5 @@ django-debug-toolbar
 south
 django-registration
 pytz
-dateutil
+python-dateutil
 django-coverage

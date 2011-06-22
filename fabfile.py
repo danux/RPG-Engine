@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from fabric.api import *
 from fabric.contrib.project import rsync_project
@@ -36,13 +37,19 @@ def sync():
 
 def deploy():
     """ Runs a git update on the remote host and touches the wsgi file """
-    test()
-    local('git commit -m "Deploy to %s "' % env.hosts[0])
+#    test()
+    tag_name = datetime.now().strftime("deployment-%Y-%m-%d--%H-%M-%S")
+    print 'Deploying: %s' % tag_name
+    local('git tag %s' % tag_name)
+    local('git push origin %s' % tag_name)
     with cd(REMOTE_SITE_DIR):
         run('git pull')
-        run('workon %s' % PROJECT_NAME)
-        run('pip install -r requirements.txt')
+        run('pip install -E %s/bin/python -r requirements.txt' % REMOTE_VIRTUAL_ENV_DIR)
         run('touch *.wsgi')
+        
+    with cd('%s/%s' % (REMOTE_SITE_DIR, PROJECT_NAME)):
+        run('python manage.py syncdb')
+        run('python manage.py ')
         
 def test():
     """ Tests the project locally """
