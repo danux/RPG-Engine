@@ -17,6 +17,9 @@ def staging():
 def production():
     env.hosts = [PRODUCTION_HOST]
 
+def virtualenv(command):
+    run('workon %s && %s' % (PROJECT_NAME, command))
+
 def pull_media_from_live():
     """ Downloads the dynamic media folder from the live site """
     local(
@@ -48,8 +51,8 @@ def deploy():
         run('touch *.wsgi')
         
     with cd('%s/%s' % (REMOTE_SITE_DIR, PROJECT_NAME)):
-        run('python manage.py syncdb')
-        run('python manage.py ')
+        virtualenv('python manage.py syncdb')
+        virtualenv('python manage.py ')
         
 def test():
     """ Tests the project locally """
