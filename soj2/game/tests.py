@@ -237,13 +237,13 @@ class QuestViewTestCase(QuestModelTestCase):
         self.assertEqual(response.context['quest'], self.quest_one)
 
     def testJoinQuest(self):
-		"""
-		Test that a character can join a quest
-		"""
+        """
+        Test that a character can join a quest
+        """
         
 
     def testAlreadyInQuest(self):
-		"""
-		Tests what happens when a character is already in a quest
-		"""
-		pass 
+        """
+        Tests what happens when a character is already in a quest
+        """
+        pass 
