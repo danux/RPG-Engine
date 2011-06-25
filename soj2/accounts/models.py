@@ -2,8 +2,6 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.contrib.auth.models import User, Group
 
-from mcnulty.dashboard.fields import HtmlField
-
 from soj2.accounts.choice_lists import COUNTRIES, TIMEZONES, PERMISSION_TYPES
 from soj2.accounts.choice_lists import PERMISSION_VALUES
 from soj2.utils.slug_generator import slug_generator

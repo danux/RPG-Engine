@@ -1,7 +1,9 @@
 from django.conf.urls.defaults import *
-from mcnulty.urls import *
+from django.contrib import admin
 
-urlpatterns += patterns("",
+
+urlpatterns = patterns("",
+                       (r'^admin/', include(admin.site.urls)),
                        url(r"^accounts/",
                            include("soj2.accounts.urls", 
                                    namespace='accounts', )),
@@ -10,5 +12,4 @@ urlpatterns += patterns("",
                                    namespace='characters', )),
                        url(r"^game/",
                            include("soj2.game.urls", 
-                                   namespace='game', )),
-                       url(r"^", include("mcnulty.pages.urls")),)
+                                   namespace='game', )),)

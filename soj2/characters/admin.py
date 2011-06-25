@@ -1,5 +1,5 @@
-from mcnulty.dashboard.admin import VertexModelAdmin, site
-
+from django.contrib.admin import site
 from soj2.characters.models import Character
 
-site.register(Character, VertexModelAdmin)
+
+site.register(Character)

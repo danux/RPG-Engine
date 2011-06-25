@@ -1,16 +1,14 @@
 import os
 
-from mcnulty.settings import *
-
-
 PROJECT_ROOT = os.path.dirname(__file__)
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "../static-files")
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, "../media")
-TEMPLATE_DIRS = (os.path.join(PROJECT_ROOT, "../templates"),) + TEMPLATE_DIRS
+TEMPLATE_DIRS = (os.path.join(PROJECT_ROOT, "../templates"),)
 STATIC_URL = '/static-files/'
 STATIC_URL = '/media/'
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+SITE_ID = 1
 
 # Set this to a unique, random phrase and keep it secret.
 SECRET_KEY = "^brmcy8*+lt!i8fwjceco67&1+d3tn2*@xv4_b1%)9!u+9pj6("
@@ -26,17 +24,34 @@ EMAIL_SUBJECT_PREFIX = "[SOJ2]"
 
 # This setting installs the base set of Vertex applications.  Add your own
 # custom applications to enable additional functionality for your site.
-INSTALLED_APPS += ("sorl.thumbnail",
-                   "registration",
-                   "django_coverage",
-                   "mcnulty.contentpages",
-                   "mcnulty.links",
-                   "mcnulty.contact",
-                   "soj2.utils",
-                   "soj2.world",
-                   "soj2.accounts",
-                   "soj2.characters",
-                   "soj2.game")
+INSTALLED_APPS = ("django.contrib.auth",
+                  "django.contrib.contenttypes",
+                  "django.contrib.sessions",
+                  "django.contrib.sites",
+                  "django.contrib.admin",
+                  "django.contrib.admindocs",
+                  "django.contrib.redirects",
+                  "django.contrib.sitemaps",
+                  "django.contrib.syndication",
+                  "django.contrib.messages",
+                  "django.contrib.staticfiles",
+                  "reversion",
+                  "debug_toolbar",
+                  "south",
+                  "sorl.thumbnail",
+                  "registration",
+                  "django_coverage",
+                  "soj2.utils",
+                  "soj2.world",
+                  "soj2.accounts",
+                  "soj2.characters",
+                  "soj2.game")
+
+TEMPLATE_CONTEXT_PROCESSORS = ("django.contrib.auth.context_processors.auth",
+                               "django.core.context_processors.i18n",
+                               "django.core.context_processors.request",
+                               "django.core.context_processors.media",
+                               "django.core.context_processors.static",)
 
 # Accounts Settings
 ACCOUNT_ACTIVATION_DAYS = 7

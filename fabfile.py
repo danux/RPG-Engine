@@ -24,6 +24,26 @@ def virtualenv(command):
     """ Executes a command inside the remote virtualenv """
     run('workon %s && %s' % (PROJECT_NAME, command))
 
+def djangoadmin(command):
+    """ Executes a django-admin.py command """
+    virtualenv('django-admin.py %s --settings=%s.settings_%s' % (command,
+                                                                 PROJECT_NAME,
+                                                                 env.name))
+
+def deploy():
+    """ Runs a git update on the remote host and touches the wsgi file """
+    test()
+    tag_name = datetime.now().strftime("deployment-%Y-%m-%d--%H-%M-%S-") + env.name
+    local('git tag %s' % tag_name)
+    local('git push origin %s' % tag_name)
+    with cd(REMOTE_SITE_DIR):
+        run('git pull')
+        run('pip install -E %s/bin/python -r requirements.txt' % REMOTE_VIRTUAL_ENV_DIR)
+        run('touch *.wsgi')
+        
+    djangoadmin('syncdb')
+    djangoadmin('migrate')
+
 def pull_live_media():
     """ Downloads the dynamic media folder from the live site """
     local(
@@ -39,24 +59,7 @@ def sync():
     """ Download dynamic media from the live site and pushes up to staging """
     pull_live_media()
     push_staging_media()
-
-def deploy():
-    """ Runs a git update on the remote host and touches the wsgi file """
-    test()
-    tag_name = datetime.now().strftime("deployment-%Y-%m-%d--%H-%M-%S")
-    local('git tag %s' % tag_name)
-    local('git push origin %s' % tag_name)
-    with cd(REMOTE_SITE_DIR):
-        run('git pull')
-        run('pip install -E %s/bin/python -r requirements.txt' % REMOTE_VIRTUAL_ENV_DIR)
-        run('touch *.wsgi')
-        
-    with cd('%s/%s' % (REMOTE_SITE_DIR, PROJECT_NAME)):
-        virtualenv('django-admin.py syncdb --settings=%s.settings_%s' % (PROEJCT_NAME,
-                                                                         env.name))
-        virtualenv('django-admin.py migrate --settings=%s.settings_%s' % (PROEJCT_NAME,
-                                                                          env.name))
         
 def test():
     """ Tests the project locally """
-    management.call_command('test_coverage',)
+    management.call_command('test_coverage','accounts', 'characters', 'game')

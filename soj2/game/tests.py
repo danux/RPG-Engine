@@ -208,7 +208,7 @@ class QuestViewTestCase(QuestModelTestCase):
         form = CreateQuestForm()
         form.set_character_queryset(Quest.available_characters_by_user(self.test_member))
         self.assertEqual(form.fields["characters"].queryset.count(), 2)
-        
+
     def testOverviewRenders(self):
         """
         Tests that there is a view that renders all of the towns
@@ -216,7 +216,7 @@ class QuestViewTestCase(QuestModelTestCase):
         response = self.client.get(reverse('game:realm'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['nations'].count(), 1)
-    
+
     def testTownRenders(self):
         """
         Tests that a town can be rendered as a view in the game
@@ -225,15 +225,25 @@ class QuestViewTestCase(QuestModelTestCase):
                                            args=['garlok-town']))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['town'], self.town_one)
-    
+
     def testQuestRenders(self):
         """
         Tests that a quest can be rendered as a view in the game
         """
-        pass
-    
-    def testTownQuestURLStructure(self):
-        """
-        Ensures a URL matches both the town and the quest, or raises a 404
-        """
-        pass
+        response = self.client.get(reverse('game:view-quest',
+                                           args=['garlok-town',
+                                                 'test_quest',]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['quest'], self.quest_one)
+
+    def testJoinQuest(self):
+		"""
+		Test that a character can join a quest
+		"""
+        
+
+    def testAlreadyInQuest(self):
+		"""
+		Tests what happens when a character is already in a quest
+		"""
+		pass 
