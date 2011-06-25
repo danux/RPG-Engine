@@ -16,10 +16,16 @@ def realm(request):
     return render_to_response("game/realm.html", 
                               context, RequestContext(request))
 
-def view_town(request, town_id):
-    town = get_object_or_404(Town, slug=town_id)
+def view_town(request, town_slug):
+    town = get_object_or_404(Town, slug=town_slug)
     context = { 'town' : town }
     return render_to_response("game/view-town.html", 
+                              context, RequestContext(request))
+
+def view_quest(request, town_slug, quest_slug):
+    quest = get_object_or_404(Quest, slug=quest_slug, town__slug=town_slug)
+    context = { 'quest' : quest }
+    return render_to_response("game/view-quest.html", 
                               context, RequestContext(request))
 
 @login_required

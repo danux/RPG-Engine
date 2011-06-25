@@ -34,8 +34,7 @@ def reject_application_form(request, character_id=None):
         form = RejectCharacterApplicationForm(request.POST, instance=character)
         if form.is_valid():
             form.save()
-            messages.add_message(
-                                 request,
+            messages.add_message(request,
                                  messages.INFO,
                                  'You have rejected %s.' % character.name)
             return HttpResponseRedirect('/admin/characters/')
@@ -44,7 +43,8 @@ def reject_application_form(request, character_id=None):
 
     context = { 'form' : form, 'character' : character }
     return render_to_response("admin/reject-character-application.html", 
-                              context, RequestContext(request))
+                              context,
+                              RequestContext(request))
     
 @staff_member_required
 @permission_required('characters.can_moderate')
@@ -60,10 +60,9 @@ def approve_application_form(request, character_id=None):
                     approved_by__isnull=True,
                     date_submitted__isnull=False)
             
-            messages.add_message(
-                         request,
-                         messages.INFO,
-                         'You have approved %s.' % character.name)
+            messages.add_message(request,
+                                 messages.INFO,
+                                 'You have approved %s.' % character.name)
 
             character.approved_by = request.user
             character.date_approved = datetime.now()

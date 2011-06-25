@@ -3,8 +3,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import pre_save
 
-from mcnulty.dashboard.fields import HtmlField
-
 from soj2.accounts.models import UserProfile as Author
 from soj2.utils.slug_generator import slug_generator
 from soj2.world.models import Town, Race
@@ -29,7 +27,7 @@ class Character(models.Model):
     physical_appearence = models.TextField()
     avatar = models.ImageField(blank=True, null=True, upload_to=
                                "dynamic/characters/character/avatars")
-    gm_notes = HtmlField(blank=True, null=True)
+    gm_notes = models.TextField(blank=True, null=True)
     approved_by = models.ForeignKey(User, related_name="approved_characters",
                                     blank=True, null=True)
     date_approved = models.DateTimeField(blank=True, null=True)

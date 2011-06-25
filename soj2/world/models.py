@@ -1,14 +1,12 @@
 from django.db import models
 
-from mcnulty.dashboard.fields import HtmlField
-
 class WorldNode(models.Model):
     """
     All things in the world are essentially "nodes", sharing some common
     attributes. This class can be extended by everything in the world module.
     """
     name = models.CharField(max_length=150, unique=True)
-    description = HtmlField()
+    description = models.TextField()
     slug = models.SlugField(unique=True)
     image = models.ImageField(upload_to='dynamic/world/world-node', blank=True,
                               null=True)
@@ -35,7 +33,7 @@ class Race(WorldNode):
     """
     Model representing a race in the game.
     """
-    traditions = HtmlField()
-    characteristics = HtmlField()
-    physical_appearence = HtmlField()
-    playing_tips = HtmlField()
+    traditions = models.TextField()
+    characteristics = models.TextField()
+    physical_appearence = models.TextField()
+    playing_tips = models.TextField()
