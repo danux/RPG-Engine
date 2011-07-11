@@ -19,7 +19,8 @@ class CharacterCreationTestCase(TestCase):
     """
     fixtures = ['world_test_data.json',
                 'accounts_test_data.json',
-                'character_test_data.json']
+                'characters_test_data.json',
+                'game_test_data.json']
     
     def setUp(self):
         self.test_admin = User.objects.get(pk=1)
@@ -51,12 +52,11 @@ class CharacterCreationTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def testBlankForm(self):
-        response = self.client.get(
-                reverse('characters:application-form'))
+        response = self.client.get(reverse('characters:application-form'))
         self.assertEqual(response.status_code, 200)
         
-        response = self.client.get(
-                reverse('characters:amend-application-form', args=[0]))
+        response = self.client.get(reverse('characters:amend-application-form',
+                                           args=[0]))
         self.assertEqual(response.status_code, 404)
 
     def testCreationForm(self):
@@ -65,7 +65,7 @@ class CharacterCreationTestCase(TestCase):
         or submitted for GM review. 
         """
         self.submit_application_form()
-        character = Character.objects.get(pk=1)
+        character = Character.objects.get(pk=5)
         self.assertTrue(character is not None)
         self.assertEquals(character.status, 'draft')
     
@@ -76,16 +76,16 @@ class CharacterCreationTestCase(TestCase):
         be modified.
         """
         self.submit_application_form()
-        character = Character.objects.get(pk=1)
+        character = Character.objects.get(pk=5)
         self.assertFalse(character.is_approved)
         
         self.submit_application_form(submit=True,
-                url=reverse('characters:amend-application-form', args=[1]))
-        character = Character.objects.get(pk=1)
+                url=reverse('characters:amend-application-form', args=[5]))
+        character = Character.objects.get(pk=5)
         self.assertEquals(character.status, 'pending')
         
         response = self.client.get(
-                reverse('characters:amend-application-form', args=[1]))
+                reverse('characters:amend-application-form', args=[5]))
         self.assertEqual(response.status_code, 404)
         
     def testSlugGeneration(self):
@@ -117,9 +117,9 @@ class CharacterCreationTestCase(TestCase):
                                     post_data)
         self.assertEqual(response.status_code, 200)
         
-        character_one = Character.objects.get(pk=1)
-        character_two = Character.objects.get(pk=2)
-        character_three = Character.objects.get(pk=3)
+        character_one = Character.objects.get(pk=5)
+        character_two = Character.objects.get(pk=6)
+        character_three = Character.objects.get(pk=7)
 
         self.assertEquals(character_one.slug, 'test-name')
         self.assertEquals(character_two.slug, 'test-name_')
@@ -139,7 +139,7 @@ class CharacterCreationTestCase(TestCase):
         self.client.login(username="test_admin", password='test')
         response = self.client.get(reverse(
                 'characters:approve-application-form',
-                args=[1]))
+                args=[5]))
         self.assertEquals(response.status_code, 404)
         
         self.submit_application_form(submit=True,
@@ -147,12 +147,11 @@ class CharacterCreationTestCase(TestCase):
         
         response = self.client.get(reverse(
                 'characters:approve-application-form',
-                args=[1]))
+                args=[5]))
         self.assertEquals(response.status_code, 302)
         
-        character = Character.objects.get(pk=1)
+        character = Character.objects.get(pk=5)
         self.assertEquals(character.status, 'approved')
-        
     
     def testCharacterRejection(self):
         """
@@ -161,7 +160,7 @@ class CharacterCreationTestCase(TestCase):
         self.client.login(username="test_admin", password='test')
         response = self.client.get(reverse(
                 'characters:reject-application-form',
-                args=[1]))
+                args=[5]))
         self.assertEquals(response.status_code, 404)
         
         self.submit_application_form(submit=True,
@@ -169,14 +168,20 @@ class CharacterCreationTestCase(TestCase):
         
         response = self.client.get(reverse(
                 'characters:reject-application-form',
-                args=[1]))
+                args=[5]))
         self.assertEquals(response.status_code, 200)
         
         response = self.client.post(reverse(
                 'characters:reject-application-form',
-                args=[1]), { 'gm_notes' : 'do not like' })
+                args=[5]), { 'gm_notes' : 'do not like' })
         self.assertEquals(response.status_code, 302)
         
-        character = Character.objects.get(pk=1)
+        character = Character.objects.get(pk=5)
         
         self.assertEquals(character.status, 'unsuccessful')
+        
+    def testCanLoadCharactersByUser(self):
+        """
+        Ensures the static method correctly gets all characters for a user
+        """
+        self.assertEqual(len(Character.approved_characters_by_user(self.test_member)), 2)

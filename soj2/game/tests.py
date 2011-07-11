@@ -14,10 +14,11 @@ from django.db import IntegrityError
 from django.test import TestCase
 from django.test.client import Client
 
-from soj2.game.forms import CreateQuestForm
+from soj2.game.forms import CreateQuestForm, JoinQuestForm, LeaveQuestForm
 from soj2.game.models import Quest, QuestMembership
 from soj2.characters.models import Character
 from soj2.world.models import Town
+
 
 class QuestModelTestCase(TestCase):
     """
@@ -37,6 +38,7 @@ class QuestModelTestCase(TestCase):
         self.character_one = Character.objects.get(pk=1)
         self.character_two = Character.objects.get(pk=2)
         self.character_three = Character.objects.get(pk=3)
+        self.character_four = Character.objects.get(pk=4)
         self.town_one = Town.objects.get(pk=4)
         self.quest_one = Quest.objects.get(pk=1)
     
@@ -184,12 +186,12 @@ class ForeignModelTestCase(QuestModelTestCase):
         self.assertTrue(
             (self.character_one in Quest.available_characters_by_user(self.test_member)))
 
-class QuestViewTestCase(QuestModelTestCase):
+class ViewRenderingAndContextTestCase(QuestModelTestCase):
     """
     Tests the quest views, specifically forms
     """
     def setUp(self):
-        super(QuestViewTestCase, self).setUp()
+        super(ViewRenderingAndContextTestCase, self).setUp()
         self.client.login(username='test_member', password='test')
 
     def testQuestCreationViewRenders(self):
@@ -197,17 +199,11 @@ class QuestViewTestCase(QuestModelTestCase):
         Tests that getting the character page gives a 200 response, and
         contains a form
         """
-        response = self.client.get(reverse('game:create-quest'))
+        response = self.client.get(reverse('game:create-quest',
+                                           args=[self.town_one.slug,
+                                                 self.character_one.slug]))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(isinstance(response.context['form'], forms.ModelForm))
-
-    def testCharacterQuerySet(self):
-        """
-        Tests that a user's characters are shown in the characters box
-        """
-        form = CreateQuestForm()
-        form.set_character_queryset(Quest.available_characters_by_user(self.test_member))
-        self.assertEqual(form.fields["characters"].queryset.count(), 2)
 
     def testOverviewRenders(self):
         """
@@ -222,7 +218,7 @@ class QuestViewTestCase(QuestModelTestCase):
         Tests that a town can be rendered as a view in the game
         """
         response = self.client.get(reverse('game:view-town',
-                                           args=['garlok-town']))
+                                           args=[self.quest_one.town.slug]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['town'], self.town_one)
 
@@ -231,19 +227,164 @@ class QuestViewTestCase(QuestModelTestCase):
         Tests that a quest can be rendered as a view in the game
         """
         response = self.client.get(reverse('game:view-quest',
-                                           args=['garlok-town',
-                                                 'test_quest',]))
+                                           args=[self.quest_one.town.slug,
+                                                 self.quest_one.slug,]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['quest'], self.quest_one)
+        
+class JoinExitQuestViewsTestCase(ViewRenderingAndContextTestCase):
+    """
+    Tests the views that lets users join and leave quests.
+    """
+    def addToQuest(self, character, quest):
+        """
+        Helper that adds a character to a quest via a view
+        """
+        data = { 'character' : character.pk, }
+        response = self.client.post(reverse('game:join-quest',
+                                            args=[quest.town.slug,
+                                                  quest.slug,]),
+                                    data)
+        return response
+    
+    def removeFromQuest(self, character, quest):
+        """
+        Helper that adds a character to a quest via a view
+        """
+        data = { 'character' : character.pk, }
+        response = self.client.post(reverse('game:leave-quest',
+                                            args=[quest.town.slug,
+                                                  quest.slug,]),
+                                    data)
+        return response
 
+    def testCreateQuest(self):
+        """
+        Tests the views for creating a quest, ensures that the creating
+        character is the leader
+        """
+        response = self.client.get(reverse('game:create-quest',
+                                           args=[self.quest_one.town.slug,
+                                                 self.character_one.slug]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(isinstance(response.context['form'], CreateQuestForm))
+        
+        data = {'name' : 'test quest again'}
+        response = self.client.post(reverse('game:create-quest',
+                                            args=[self.town_one.slug,
+                                                 self.character_one.slug]),
+                                    data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response,
+                             reverse('game:view-quest', args=[self.town_one.slug,
+                                                              'test-quest-again']))
+        
+        quest = Quest.objects.get(slug='test-quest-again')
+        self.assertTrue(quest.is_leader(self.character_one))
+        
+    def testCreateQuestAlreadyInQuest(self):
+        """
+        Test to make sure no one can join a quest if their character is
+        already in a quest
+        """
+        self.quest_one.add_character(self.character_one)
+        response = self.client.get(reverse('game:create-quest',
+                                           args=[self.quest_one.town.slug,
+                                                 self.character_one.slug]))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response,
+                             reverse('game:view-town', args=[self.town_one.slug]))
+        
+    def testUnapprovedCannotStart(self):
+        """
+        Make sure un-approved characters cannot start a quest.
+        """
+        response = self.client.get(reverse('game:create-quest',
+                                           args=[self.quest_one.town.slug,
+                                                 self.character_four.slug]))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response,
+                             reverse('game:view-town', args=[self.town_one.slug]))
+        
     def testJoinQuest(self):
         """
-        Test that a character can join a quest
+        Test that a character can join a quest and then get redirected
+        back to the quest
         """
+        response = self.client.get(reverse('game:join-quest',
+                                           args=[self.quest_one.town.slug,
+                                                 self.quest_one.slug,]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(isinstance(response.context['form'], JoinQuestForm))
         
-
+        response = self.addToQuest(self.character_one, self.quest_one)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('game:view-quest',
+                                               args=[self.quest_one.town.slug,
+                                                     self.quest_one.slug,]))
+        self.assertTrue(self.quest_one.has_character(self.character_one)) 
+        
+    def testOnlyMyCharacterJoinQuest(self):
+        """
+        Tests that a user can only join a quest with their own characters
+        """
+        data = { 'character' : self.character_three.pk, }
+        self.addToQuest(self.character_three, self.quest_one)
+        self.assertFalse(self.quest_one.has_character(self.character_three)) 
+        
     def testAlreadyInQuest(self):
         """
         Tests what happens when a character is already in a quest
         """
-        pass 
+        response = self.addToQuest(self.character_one, self.quest_one)
+        self.assertTrue(self.quest_one.has_character(self.character_one))
+        self.assertEqual(self.quest_one.current_characters.count(), 1)
+        response = self.addToQuest(self.character_one, self.quest_one)
+        self.assertEqual(self.quest_one.current_characters.count(), 1)
+
+    def testUserHasAvailableCharacter(self):
+        """
+        Tests that a user cannot join a quest, or get to the view, if they
+        have no available character
+        """
+        self.addToQuest(self.character_one, self.quest_one)
+        self.addToQuest(self.character_two, self.quest_one)
+        response = self.client.get(reverse('game:join-quest',
+                                           args=[self.quest_one.town.slug,
+                                                 self.quest_one.slug,]))
+        self.assertRedirects(response, reverse('game:view-quest',
+                                               args=[self.quest_one.town.slug,
+                                                     self.quest_one.slug,]))
+
+    def testCanLeaveQuest(self):
+        """
+        Ensures a character can leave a quest
+        """
+        self.addToQuest(self.character_one, self.quest_one)
+        self.assertEqual(self.quest_one.current_characters.count(), 1)
+        response = self.removeFromQuest(self.character_one, self.quest_one)
+        self.assertRedirects(response, reverse('game:view-quest',
+                                               args=[self.quest_one.town.slug,
+                                                     self.quest_one.slug,]))
+        self.assertEqual(self.quest_one.current_characters.count(), 0)
+
+    def testAutoCloseQuests(self):
+        """
+        Tests that an empty quest becomes closed
+        """
+        self.addToQuest(self.character_one, self.quest_one)
+        self.assertTrue(self.quest_one.is_open)
+        self.removeFromQuest(self.character_one, self.quest_one)
+        self.assertFalse(self.quest_one.is_open)
+
+    def testCanOnlyRemoveMyCharacter(self):
+        """
+        Ensures that a user can only remove their own characters from a quest
+        """
+        pass
+
+    def testAssignsNewLeader(self):
+        """
+        Ensures a new quest leader is automatically assigned if the current
+        leader leaves the quest
+        """

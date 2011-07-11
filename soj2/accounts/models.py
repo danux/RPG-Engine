@@ -66,6 +66,10 @@ class UserProfile(models.Model):
         self.add_permission(game_permission, value)
 
     def has_permission_by_key(self, key, value):
+        """
+        Determines whether or not an account has the value of permission
+        key set
+        """
         try:
             game_permission = GamePermission.objects.get(key=key)
         except GamePermission.DoesNotExist, e:

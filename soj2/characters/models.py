@@ -25,8 +25,8 @@ class Character(models.Model):
     hometown = models.ForeignKey(Town)
     back_story = models.TextField()
     physical_appearence = models.TextField()
-    avatar = models.ImageField(blank=True, null=True, upload_to=
-                               "dynamic/characters/character/avatars")
+    avatar = models.ImageField(blank=True, null=True, 
+                               upload_to="dynamic/characters/character/avatars")
     gm_notes = models.TextField(blank=True, null=True)
     approved_by = models.ForeignKey(User, related_name="approved_characters",
                                     blank=True, null=True)
@@ -38,8 +38,7 @@ class Character(models.Model):
     class Meta:
         ordering = ["name"]
         permissions = (
-            ("can_moderate", "Can moderate characters"),
-        )
+            ("can_moderate", "Can moderate characters"),)
     
     @property
     def is_approved(self):
@@ -52,7 +51,7 @@ class Character(models.Model):
         '''
         Calculates the characters current state. This could be stored as
         an option in the model, but a dynamic solution provides greater
-        flexability and normalisation
+        flexibility and normalisation
         '''
         if self.is_approved is True:
             return 'approved'
@@ -62,5 +61,12 @@ class Character(models.Model):
             return 'pending'
         else:
             return 'draft'
+
+    @staticmethod
+    def approved_characters_by_user(user):
+        """
+        Returns all approved characters for a given user
+        """
+        return user.userprofile.character_set.exclude(date_approved__isnull=True)
 
 pre_save.connect(slug_generator, sender=Character)

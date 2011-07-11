@@ -52,5 +52,23 @@
             "date_approved": "2011-06-06 10:41:08",
             "date_submitted": "2011-06-06 10:41:08"
         }
+    },
+    {
+        "pk": 4,
+        "model": "characters.character",
+        "fields": {
+            "author": 1,
+            "name": "test_four",
+            "slug": "test_four",
+            "race" : 2,
+            "hometown" : 4,
+            "back_story" : "N/a",
+            "physical_appearence" : "N/a",
+            "avatar" : "",
+            "gm_notes" : "",
+            "approved_by" : null,
+            "date_approved": null,
+            "date_submitted": "2011-06-06 10:41:08"
+        }
     }
 ]

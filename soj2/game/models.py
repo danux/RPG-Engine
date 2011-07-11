@@ -10,40 +10,54 @@ from soj2.utils.slug_generator import slug_generator
 
 
 class Quest(models.Model):
-    
+
     name = models.CharField(max_length=150)
     slug = models.SlugField()
     is_open = models.BooleanField()
     town = models.ForeignKey(Town)
     characters = models.ManyToManyField(Character, through="QuestMembership")
-    
+
     class MultipleQuestsException(Exception):
         pass
-    
+
     class MultipleLeaderException(Exception):
         pass
 
     class QuestClosed(Exception):
         pass
-    
+
     @property
     def current_characters(self):
         return self.questmembership_set.filter(date_left__isnull=True)
-    
+
     @property
     def current_leaders(self):
         return self.current_characters.filter(is_leader=True)
-    
+
     @staticmethod
     def available_characters_by_user(user):
         """
         Returns all of the available characters for a given user. I.e.
         the characters are not currently on a quest
         """
-        return user.userprofile.character_set.exclude(
-            questmembership__date_left__isnull=True,
-            questmembership__pk__isnull=False)
-    
+        return user.userprofile.character_set.exclude(questmembership__date_left__isnull=True,
+                                                      questmembership__pk__isnull=False,).filter(date_approved__isnull=False)
+
+    def memberships_by_user(self, user):
+        """
+        Returns all of the memberships this user has in the quest 
+        """
+        return self.current_characters
+
+    def has_user(self, user):
+        """
+        Returns true or false if a user has a character on a quest
+        """
+        for character in Character.approved_characters_by_user(user):
+            if self.has_character(character):
+                return True
+        return False
+
     def has_character(self, character):
         """
         Returns true or false if a character is on a quest
@@ -54,7 +68,7 @@ class Quest(models.Model):
             return False
         else:
             return True
-        
+
     def is_leader(self, character):
         """
         Returns True or False if the character passed is a leader on the quest
@@ -65,7 +79,7 @@ class Quest(models.Model):
             return False
         else:
             return True
-    
+
     def add_character(self, character, is_leader=False):
         """
         Adds a character to a quest, and raises an exception is the
@@ -73,16 +87,16 @@ class Quest(models.Model):
         """
         if self.is_open is not True:
             raise Quest.QuestClosed
-        
+
         if self.current_characters.count() == 0:
             is_leader = True
-        
+
         if self.has_character(character):
             raise Quest.MultipleQuestsException
         quest_membership = QuestMembership.objects.create(quest=self,
                                                           character=character,
                                                           is_leader=is_leader)
-    
+
     def remove_character(self, character):
         """
         Adds a character to a quest, and raises an exception is the
@@ -105,7 +119,7 @@ class Quest(models.Model):
                 new_leader.save()
         else:
             raise QuestMembership.DoesNotExist
-        
+
     def make_leader(self, character):
         """
         Makes the character passed in a leader of the quest, if they are
@@ -123,8 +137,7 @@ class Quest(models.Model):
         membership = self.current_characters.get(character=character)
         membership.is_leader = True
         membership.save()
-        
-        
+
 class QuestMembership(models.Model):
     """
     Model to manage relationship between a character and a Quest
