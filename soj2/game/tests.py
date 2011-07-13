@@ -150,6 +150,29 @@ class QuestModelTestCase(TestCase):
         self.quest_one.make_leader(self.character_two)
         self.assertEqual(self.quest_one.current_leaders.count(), 2)
     
+    def testRemoveLeader(self):
+        """
+        Tests that a member of a quest can be promoted to quest leader
+        """
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.add_character(self.character_two)
+        self.quest_one.make_leader(self.character_two)
+        self.assertEqual(self.quest_one.current_leaders.count(), 2)
+        self.quest_one.remove_leader(self.character_two)
+        self.assertEqual(self.quest_one.current_leaders.count(), 1)
+        self.assertRaises(QuestMembership.DoesNotExist,
+                          lambda: self.quest_one.remove_leader(self.character_two))
+    
+    def testRemoveLeaderAutoNewLeader(self):
+        """
+        Tests that if a user removes their own leadership of a quest a new
+        one is selected
+        """
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.add_character(self.character_two)
+        self.quest_one.remove_leader(self.character_one)
+        self.assertTrue(self.quest_one.is_leader(self.character_two))
+        
     def testMakeLeaderBoundaries(self):
         """
         Tests the boundaries of adding leaders, and checks all exceptions
@@ -177,6 +200,15 @@ class QuestModelTestCase(TestCase):
         self.quest_one.add_character(self.character_one)
         self.assertTrue(self.quest_one.has_user(self.test_member))
         self.assertFalse(self.quest_one.has_user(self.test_admin))
+        
+    def testUserInQuestAsLeader(self):
+        """
+        Tests that a quest correctly returns true or false if a user is in a
+        quest as a leader
+        """
+        self.quest_one.add_character(self.character_one)
+        self.assertTrue(self.quest_one.has_user_as_leader(self.test_member))
+        self.assertFalse(self.quest_one.has_user_as_leader(self.test_admin))
         
 class ForeignModelTestCase(QuestModelTestCase):
     """

@@ -149,6 +149,22 @@ class Quest(models.Model):
         membership.is_leader = True
         membership.save()
 
+    def remove_leader(self, character):
+        """
+        Removes the leadership status of given character's membership
+        """
+        if not self.is_leader(character):
+            raise QuestMembership.DoesNotExist
+        
+        membership = self.current_characters.get(character=character)
+        membership.is_leader = False
+        membership.save()
+        
+        if len(self.current_leaders) == 0:
+            new_leader = list(self.current_characters.order_by('date_created'))[0]
+            new_leader.is_leader = True
+            new_leader.save()
+
 class QuestMembership(models.Model):
     """
     Model to manage relationship between a character and a Quest
