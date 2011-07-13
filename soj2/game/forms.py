@@ -36,3 +36,9 @@ class LeaveQuestForm(forms.Form):
 
     def set_character_queryset(self, character_queryset):
         self.fields["character"].choices = character_queryset.values_list('id', 'character__name')
+        
+class MakeQuestLeaderForm(LeaveQuestForm):
+    """
+    The form used to make a quest leader
+    """
+    pass

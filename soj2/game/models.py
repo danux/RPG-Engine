@@ -34,6 +34,10 @@ class Quest(models.Model):
     def current_leaders(self):
         return self.current_characters.filter(is_leader=True)
 
+    @property
+    def non_leaders(self):
+        return self.current_characters.exclude(is_leader=True)
+
     @staticmethod
     def available_characters_by_user(user):
         """
@@ -54,6 +58,14 @@ class Quest(models.Model):
         Returns true or false if a user has a character on a quest
         """
         if len(self.memberships_by_user(user)) > 0:
+            return True
+        return False
+
+    def has_user_as_leader(self, user):
+        """
+        Returns true or false if a user has a leader on a quest
+        """
+        if len(self.memberships_by_user(user).filter(is_leader=True)) > 0:
             return True
         return False
 

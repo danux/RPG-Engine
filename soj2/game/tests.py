@@ -379,13 +379,26 @@ class JoinExitQuestViewsTestCase(ViewRenderingAndContextTestCase):
         """
         Ensures a character can leave a quest
         """
-        self.addToQuest(self.character_one, self.quest_one)
+        self.quest_one.add_character(self.character_one)
+        response = self.client.get(reverse('game:leave-quest',
+                                           args=[self.quest_one.town.slug,
+                                                 self.quest_one.slug,]))
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(self.quest_one.current_characters.count(), 1)
         response = self.removeFromQuest(self.character_one, self.quest_one)
         self.assertRedirects(response, reverse('game:view-quest',
                                                args=[self.quest_one.town.slug,
                                                      self.quest_one.slug,]))
         self.assertEqual(self.quest_one.current_characters.count(), 0)
+
+    def testCanLeaveQuestOnlyIfOn(self):
+        """
+        Ensures a character must be on a quest to leave it
+        """
+        response = self.removeFromQuest(self.character_one, self.quest_one)
+        self.assertRedirects(response, reverse('game:view-quest',
+                                               args=[self.quest_one.town.slug,
+                                                     self.quest_one.slug,]))
 
     def testAutoCloseQuests(self):
         """
@@ -422,6 +435,10 @@ class JoinExitQuestViewsTestCase(ViewRenderingAndContextTestCase):
         Tests that the creator of a quest can assign a character to be leader
         """
         self.quest_one.add_character(self.character_one)
+        response = self.client.get(reverse('game:make-quest-leader',
+                                           args=[self.quest_one.town.slug,
+                                                 self.quest_one.slug,]))
+        self.assertEqual(response.status_code, 200)
         self.quest_one.add_character(self.character_two)
         self.assertFalse(self.quest_one.is_leader(self.character_two))
         self.makeLeader(self.character_two, self.quest_one)
@@ -437,4 +454,3 @@ class JoinExitQuestViewsTestCase(ViewRenderingAndContextTestCase):
         self.assertFalse(self.quest_one.is_leader(self.character_two))
         self.makeLeader(self.character_two, self.quest_one)
         self.assertFalse(self.quest_one.is_leader(self.character_two))
-        

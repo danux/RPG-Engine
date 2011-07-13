@@ -10,6 +10,7 @@ from django.template import RequestContext
 
 from soj2.characters.models import Character
 from soj2.game.forms import CreateQuestForm, JoinQuestForm, LeaveQuestForm
+from soj2.game.forms import MakeQuestLeaderForm
 from soj2.game.models import Quest
 from soj2.world.models import Nation, Town
 from soj2.utils.error_handler import handle_error
@@ -150,4 +151,38 @@ def leave_quest(request, town_slug, quest_slug):
     
     context = { 'form' : form, 'quest' : quest }
     return render_to_response("game/leave-quest.html", 
-                              context, RequestContext(request))    
+                              context, RequestContext(request))
+    
+@login_required
+def make_quest_leader(request, town_slug, quest_slug):
+    """
+    View that allows the quest leader to make new characters the leader
+    """
+    quest = get_object_or_404(Quest, slug=quest_slug, town__slug=town_slug)
+    
+    if quest.has_user_as_leader(request.user) is not True:
+        return handle_error(request,
+                            'You are not leader of this quest',
+                            reverse('game:view-quest', args=[town_slug,
+                                                             quest_slug]))
+    if request.method == 'POST':
+        form = MakeQuestLeaderForm(request.POST)
+        form.set_character_queryset(quest.non_leaders)
+        if form.is_valid():
+            character = quest.current_characters.get(character__pk = form.cleaned_data['character'],
+                                                            character__author__user = request.user).character
+            quest.make_leader(character)
+            messages.add_message(request,
+                                 messages.INFO,
+                                 "%s has left %s!" % (character.name,
+                                                      quest.name))
+            return HttpResponseRedirect(reverse('game:view-quest',
+                                                args=[town_slug,
+                                                      quest.slug]))
+    else:
+        form = MakeQuestLeaderForm()
+        form.set_character_queryset(quest.non_leaders)
+    
+    context = { 'form' : form, 'quest' : quest }
+    return render_to_response("game/make-quest-leader.html", 
+                              context, RequestContext(request))
