@@ -163,6 +163,14 @@ class QuestModelTestCase(TestCase):
         self.assertRaises(QuestMembership.DoesNotExist,
                           lambda: self.quest_one.remove_leader(self.character_two))
     
+    def testCannotRemoveLeaderIfOnlyMember(self):
+        """
+        Tests that a member of a quest can be promoted to quest leader
+        """
+        self.quest_one.add_character(self.character_one)
+        self.assertRaises(Quest.NoLeaderConflict,
+                          lambda: self.quest_one.remove_leader(self.character_one))
+    
     def testRemoveLeaderAutoNewLeader(self):
         """
         Tests that if a user removes their own leadership of a quest a new

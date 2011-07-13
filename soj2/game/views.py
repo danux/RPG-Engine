@@ -170,7 +170,7 @@ def make_quest_leader(request, town_slug, quest_slug):
         form.set_character_queryset(quest.non_leaders)
         if form.is_valid():
             character = quest.current_characters.get(character__pk = form.cleaned_data['character'],
-                                                            character__author__user = request.user).character
+                                                     character__author__user = request.user).character
             quest.make_leader(character)
             messages.add_message(request,
                                  messages.INFO,

@@ -10,7 +10,10 @@ from soj2.utils.slug_generator import slug_generator
 
 
 class Quest(models.Model):
-
+    """
+    Representation of a Quest in the game. A quest is essentially a thread
+    in the message board, with a leader.
+    """
     name = models.CharField(max_length=150)
     slug = models.SlugField()
     is_open = models.BooleanField()
@@ -24,6 +27,9 @@ class Quest(models.Model):
         pass
 
     class QuestClosed(Exception):
+        pass
+
+    class NoLeaderConflict(Exception):
         pass
 
     @property
@@ -138,13 +144,13 @@ class Quest(models.Model):
         """
         if self.is_open is not True:
             raise Quest.QuestClosed
-        
+
         if not self.has_character(character):
             raise QuestMembership.DoesNotExist
-        
+
         if self.is_leader(character):
             raise Quest.MultipleLeaderException
-        
+
         membership = self.current_characters.get(character=character)
         membership.is_leader = True
         membership.save()
@@ -155,13 +161,16 @@ class Quest(models.Model):
         """
         if not self.is_leader(character):
             raise QuestMembership.DoesNotExist
-        
+
+        if len(self.current_characters) == 1:
+            raise Quest.NoLeaderConflict
+
         membership = self.current_characters.get(character=character)
         membership.is_leader = False
         membership.save()
-        
+
         if len(self.current_leaders) == 0:
-            new_leader = list(self.current_characters.exclude(character=character).order_by('date_created'))[0]
+            new_leader = list(self.non_leaders.exclude(character=character).order_by('date_created'))[0]
             new_leader.is_leader = True
             new_leader.save()
 
