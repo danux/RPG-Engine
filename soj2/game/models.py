@@ -161,7 +161,7 @@ class Quest(models.Model):
         membership.save()
         
         if len(self.current_leaders) == 0:
-            new_leader = list(self.current_characters.order_by('date_created'))[0]
+            new_leader = list(self.current_characters.exclude(character=character).order_by('date_created'))[0]
             new_leader.is_leader = True
             new_leader.save()
 
