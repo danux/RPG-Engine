@@ -47,15 +47,14 @@ class Quest(models.Model):
         """
         Returns all of the memberships this user has in the quest 
         """
-        return self.current_characters
+        return self.current_characters.filter(character__author__user=user)
 
     def has_user(self, user):
         """
         Returns true or false if a user has a character on a quest
         """
-        for character in Character.approved_characters_by_user(user):
-            if self.has_character(character):
-                return True
+        if len(self.memberships_by_user(user)) > 0:
+            return True
         return False
 
     def has_character(self, character):

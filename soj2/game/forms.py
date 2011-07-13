@@ -28,8 +28,11 @@ class JoinQuestForm(QuestForm):
     """
     pass
         
-class LeaveQuestForm(QuestForm):
+class LeaveQuestForm(forms.Form):
     """
     The form used to leave a quest
     """
-    pass
+    character = forms.ChoiceField()
+
+    def set_character_queryset(self, character_queryset):
+        self.fields["character"].choices = character_queryset.values_list('id', 'character__name')

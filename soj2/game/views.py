@@ -127,27 +127,26 @@ def leave_quest(request, town_slug, quest_slug):
     
     if quest.has_user(request.user) is not True:
         return handle_error(request,
-                            'You have no available characters',
+                            'You have no characters on this quest',
                             reverse('game:view-quest', args=[town_slug,
                                                              quest_slug]))
     if request.method == 'POST':
-        form = JoinQuestForm(request.POST)
-        form.set_character_queryset(Quest.available_characters_by_user(request.user))
+        form = LeaveQuestForm(request.POST)
+        form.set_character_queryset(quest.memberships_by_user(request.user))
         if form.is_valid():
-            quest_membership = form.save(commit=False)
-            quest_membership.quest = quest
-            quest_membership.save()
+            character = quest.current_characters.get(character__pk = form.cleaned_data['character'],
+                                                            character__author__user = request.user).character
+            quest.remove_character(character)
             messages.add_message(request,
                                  messages.INFO,
-                                 "%s has joined %s!" % (quest_membership.character.name,
-                                                        quest.name))
+                                 "%s has left %s!" % (character.name,
+                                                      quest.name))
             return HttpResponseRedirect(reverse('game:view-quest',
                                                 args=[town_slug,
                                                       quest.slug]))
     else:
-        form = JoinQuestForm()
-        form.set_character_queryset(Quest.available_characters_by_user(request.user))
-    
+        form = LeaveQuestForm()
+        form.set_character_queryset(quest.memberships_by_user(request.user))
     
     context = { 'form' : form, 'quest' : quest }
     return render_to_response("game/leave-quest.html", 

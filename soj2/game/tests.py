@@ -169,6 +169,15 @@ class QuestModelTestCase(TestCase):
         self.assertRaises(QuestMembership.DoesNotExist,
                           lambda: self.quest_one.make_leader(self.character_two))
         
+    def testUserInQuest(self):
+        """
+        Tests that a quest correctly returns true or false if a user is in a
+        quest
+        """
+        self.quest_one.add_character(self.character_one)
+        self.assertTrue(self.quest_one.has_user(self.test_member))
+        self.assertFalse(self.quest_one.has_user(self.test_admin))
+        
 class ForeignModelTestCase(QuestModelTestCase):
     """
     Tests that foreign models are able to correctly return information about
@@ -257,6 +266,17 @@ class JoinExitQuestViewsTestCase(ViewRenderingAndContextTestCase):
                                                   quest.slug,]),
                                     data)
         return response
+    
+    def makeLeader(self, character, quest):
+        """
+        Helper that adds a character to a quest via a view
+        """
+        data = { 'character' : character.pk, }
+        response = self.client.post(reverse('game:make-quest-leader',
+                                            args=[quest.town.slug,
+                                                  quest.slug,]),
+                                    data)
+        return response
 
     def testCreateQuest(self):
         """
@@ -328,7 +348,6 @@ class JoinExitQuestViewsTestCase(ViewRenderingAndContextTestCase):
         """
         Tests that a user can only join a quest with their own characters
         """
-        data = { 'character' : self.character_three.pk, }
         self.addToQuest(self.character_three, self.quest_one)
         self.assertFalse(self.quest_one.has_character(self.character_three)) 
         
@@ -375,16 +394,47 @@ class JoinExitQuestViewsTestCase(ViewRenderingAndContextTestCase):
         self.addToQuest(self.character_one, self.quest_one)
         self.assertTrue(self.quest_one.is_open)
         self.removeFromQuest(self.character_one, self.quest_one)
-        self.assertFalse(self.quest_one.is_open)
+        test_quest = Quest.objects.get(pk=1)
+        self.assertFalse(test_quest.is_open)
 
     def testCanOnlyRemoveMyCharacter(self):
         """
         Ensures that a user can only remove their own characters from a quest
         """
-        pass
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.add_character(self.character_three)
+        self.removeFromQuest(self.character_three, self.quest_one)
+        self.assertTrue(self.quest_one.has_character(self.character_three))
 
     def testAssignsNewLeader(self):
         """
         Ensures a new quest leader is automatically assigned if the current
         leader leaves the quest
         """
+        self.quest_one.add_character(self.character_one)
+        self.assertTrue(self.quest_one.is_leader(self.character_one))
+        self.quest_one.add_character(self.character_two)
+        self.quest_one.remove_character(self.character_one)
+        self.assertTrue(self.quest_one.is_leader(self.character_two))
+        
+    def testMakeNewLeader(self):
+        """
+        Tests that the creator of a quest can assign a character to be leader
+        """
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.add_character(self.character_two)
+        self.assertFalse(self.quest_one.is_leader(self.character_two))
+        self.makeLeader(self.character_two, self.quest_one)
+        self.assertTrue(self.quest_one.is_leader(self.character_two))
+        
+    def testOnlyLeaderCanMakeLeader(self):
+        """
+        Tests that only the leader of a quest can assign a character to be
+        the leader
+        """
+        self.quest_one.add_character(self.character_three)
+        self.quest_one.add_character(self.character_two)
+        self.assertFalse(self.quest_one.is_leader(self.character_two))
+        self.makeLeader(self.character_two, self.quest_one)
+        self.assertFalse(self.quest_one.is_leader(self.character_two))
+        

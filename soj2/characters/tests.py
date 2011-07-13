@@ -132,6 +132,14 @@ class CharacterCreationTestCase(TestCase):
         """
         pass
     
+    def testCharacterAdmin(self):
+        """
+        Ensures the character admin is installed and loads
+        """
+        self.client.login(username="test_admin", password='test')
+        response = self.client.get('/admin/characters/')
+        self.assertEquals(response.status_code, 200)
+
     def testCharacterApproval(self):
         """
         Tests that a character application can be approved
