@@ -9,7 +9,9 @@ django-reversion
 sorl-thumbnail
 django-debug-toolbar
 south
-django-registration
+hg+https://bitbucket.org/ubernostrum/django-registration#egg=registration
 pytz
 python-dateutil
+coverage
 django-coverage
+farbic
