@@ -61,7 +61,6 @@ def create_quest(request, town_slug, character_slug):
         return handle_error(request,
                             'The character you selected is not available for you to quest with.',
                             reverse('game:view-town', args=[town_slug]))
-
     if request.method == 'POST':
         form = CreateQuestForm(request.POST)
         if form.is_valid():
@@ -91,7 +90,6 @@ def join_quest(request, town_slug, quest_slug):
     View that allows a user to join a quest
     """
     quest = get_object_or_404(Quest, slug=quest_slug, town__slug=town_slug)
-    
     if Quest.available_characters_by_user(request.user).count() < 1:
         return handle_error(request,
                             'You have no available characters',
@@ -114,18 +112,17 @@ def join_quest(request, town_slug, quest_slug):
     else:
         form = JoinQuestForm()
         form.set_character_queryset(Quest.available_characters_by_user(request.user))
-    
     context = { 'form' : form, 'quest' : quest }
     return render_to_response("game/join-quest.html", 
-                              context, RequestContext(request))
-    
+                              context,
+                              RequestContext(request))
+
 @login_required
 def leave_quest(request, town_slug, quest_slug):
     """
     View that allows a character to leave a quest
     """
     quest = get_object_or_404(Quest, slug=quest_slug, town__slug=town_slug)
-    
     if quest.has_user(request.user) is not True:
         return handle_error(request,
                             'You have no characters on this quest',
@@ -148,7 +145,6 @@ def leave_quest(request, town_slug, quest_slug):
     else:
         form = LeaveQuestForm()
         form.set_character_queryset(quest.memberships_by_user(request.user))
-    
     context = { 'form' : form, 'quest' : quest }
     return render_to_response("game/leave-quest.html", 
                               context, RequestContext(request))
@@ -159,7 +155,6 @@ def make_quest_leader(request, town_slug, quest_slug):
     View that allows the quest leader to make new characters the leader
     """
     quest = get_object_or_404(Quest, slug=quest_slug, town__slug=town_slug)
-    
     if quest.has_user_as_leader(request.user) is not True:
         return handle_error(request,
                             'You are not leader of this quest',
@@ -181,30 +176,27 @@ def make_quest_leader(request, town_slug, quest_slug):
     else:
         form = MakeQuestLeaderForm()
         form.set_character_queryset(quest.non_leaders)
-    
     context = { 'form' : form, 'quest' : quest }
     return render_to_response("game/make-quest-leader.html", 
-                              context, RequestContext(request))
-    
+                              context,
+                              RequestContext(request))
+
 @login_required
 def remove_quest_leader(request, town_slug, quest_slug):
     """
     Removes a leader from a quest
     """
     quest = get_object_or_404(Quest, slug=quest_slug, town__slug=town_slug)
-    
     if quest.has_user_as_leader(request.user) is not True:
         return handle_error(request,
                             'You are not leader of this quest',
                             reverse('game:view-quest', args=[town_slug,
                                                              quest_slug]))
-    
     if len(quest.current_characters) == 1:
         return handle_error(request,
                             'You have the only character on this quest, therefore you must remain leader',
                             reverse('game:view-quest', args=[town_slug,
                                                              quest_slug]))
-        
     if request.method == 'POST':
         form = RemoveQuestLeaderForm(request.POST)
         form.set_character_queryset(quest.current_leaders)
@@ -221,7 +213,7 @@ def remove_quest_leader(request, town_slug, quest_slug):
     else:
         form = RemoveQuestLeaderForm()
         form.set_character_queryset(quest.current_leaders)
-    
     context = { 'form' : form, 'quest' : quest }
     return render_to_response("game/remove-quest-leader.html", 
-                              context, RequestContext(request))
+                              context,
+                              RequestContext(request))

@@ -51,3 +51,9 @@ class RemoveQuestLeaderForm(CharacterActionForm):
     The form used to remove a quest leader
     """
     pass
+
+class KickUserForm(forms.Form):
+    author = forms.ChoiceField()
+
+    def set_queryset(self, queryset):
+        self.fields["author"].choices = queryset.values_list('id', 'name')

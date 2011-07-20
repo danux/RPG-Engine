@@ -14,7 +14,7 @@ from django.db import IntegrityError
 from django.test import TestCase
 from django.test.client import Client
 
-from rpgengine.game.forms import CreateQuestForm, JoinQuestForm, LeaveQuestForm
+from rpgengine.game.forms import CreateQuestForm, JoinQuestForm, LeaveQuestForm, KickUserForm
 from rpgengine.game.models import Quest, QuestMembership
 from rpgengine.characters.models import Character
 from rpgengine.world.models import Town
@@ -571,8 +571,13 @@ class LeadershipQuestViewsTestCase(ViewRenderingAndContextTestCase):
                                                  self.quest_one.slug,]))
         self.assertEqual(response.status_code, 302)
         
-    def kickUserFromQuet(self):
+    def kickUserFromQuestRenders(self):
         """
         Tests that a disruptive user can be kicked from a quest
         """
-        pass
+        response = self.client.get(reverse('game:kick-quest-member'),
+                                   args[self.quest_one.slug,
+                                        self.quest_one.town.slug])
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(isinstance(self.resposne.context['form'],
+                                   KickUserForm))
