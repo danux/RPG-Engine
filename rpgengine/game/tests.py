@@ -218,6 +218,24 @@ class QuestModelTestCase(TestCase):
         self.assertTrue(self.quest_one.has_user_as_leader(self.test_member))
         self.assertFalse(self.quest_one.has_user_as_leader(self.test_admin))
         
+    def testKickUser(self):
+        """
+        Tests that a character can be kicked from a quest
+        """
+        self.quest_one.add_character(self.character_one)
+        self.assertFalse(self.quest_one.is_kicked(self.test_member))
+        self.quest_one.kick_user(self.test_member)
+        self.assertTrue(self.quest_one.is_kicked(self.test_member))
+        
+    def testCannotAddKickedUser(self):
+        """
+        A user who has been kicked should not be allowed to re-join
+        """
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.kick_user(self.test_member)
+        self.assertRaises(Quest.KickedUserException,
+                          lambda: self.quest_one.add_character(self.character_one))
+    
 class ForeignModelTestCase(QuestModelTestCase):
     """
     Tests that foreign models are able to correctly return information about
@@ -302,17 +320,6 @@ class JoinExitQuestViewsTestCase(ViewRenderingAndContextTestCase):
         """
         data = { 'character' : character.pk, }
         response = self.client.post(reverse('game:leave-quest',
-                                            args=[quest.town.slug,
-                                                  quest.slug,]),
-                                    data)
-        return response
-    
-    def makeLeader(self, character, quest):
-        """
-        Helper that adds a character to a quest via a view
-        """
-        data = { 'character' : character.pk, }
-        response = self.client.post(reverse('game:make-quest-leader',
                                             args=[quest.town.slug,
                                                   quest.slug,]),
                                     data)
@@ -469,7 +476,23 @@ class JoinExitQuestViewsTestCase(ViewRenderingAndContextTestCase):
         self.quest_one.add_character(self.character_two)
         self.quest_one.remove_character(self.character_one)
         self.assertTrue(self.quest_one.is_leader(self.character_two))
-        
+      
+class LeadershipQuestViewsTestCase(ViewRenderingAndContextTestCase):
+    """
+    Tests the functions that the leader of a quest has at their disposal
+    """  
+    
+    def makeLeader(self, character, quest):
+        """
+        Helper that adds a character to a quest via a view
+        """
+        data = { 'character' : character.pk, }
+        response = self.client.post(reverse('game:make-quest-leader',
+                                            args=[quest.town.slug,
+                                                  quest.slug,]),
+                                    data)
+        return response
+    
     def testMakeNewLeader(self):
         """
         Tests that the creator of a quest can assign a character to be leader
@@ -547,3 +570,9 @@ class JoinExitQuestViewsTestCase(ViewRenderingAndContextTestCase):
                                            args=[self.quest_one.town.slug,
                                                  self.quest_one.slug,]))
         self.assertEqual(response.status_code, 302)
+        
+    def kickUserFromQuet(self):
+        """
+        Tests that a disruptive user can be kicked from a quest
+        """
+        pass

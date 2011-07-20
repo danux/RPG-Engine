@@ -19,6 +19,7 @@ class Quest(models.Model):
     is_open = models.BooleanField()
     town = models.ForeignKey(Town)
     characters = models.ManyToManyField(Character, through="QuestMembership")
+    kicked_users = models.ManyToManyField(User)
 
     class MultipleQuestsException(Exception):
         pass
@@ -30,6 +31,9 @@ class Quest(models.Model):
         pass
 
     class NoLeaderConflict(Exception):
+        pass
+
+    class KickedUserException(Exception):
         pass
 
     @property
@@ -102,9 +106,12 @@ class Quest(models.Model):
         Adds a character to a quest, and raises an exception is the
         character is already on the quest
         """
+        if self.is_kicked(character.author.user):
+            raise Quest.KickedUserException
+        
         if self.is_open is not True:
             raise Quest.QuestClosed
-
+        
         if self.current_characters.count() == 0:
             is_leader = True
 
@@ -128,14 +135,32 @@ class Quest(models.Model):
             if self.current_characters.count() == 0:
                 self.is_open = False
                 self.save()
-                return
+                return quest_membership
 
             if quest_membership.is_leader is True and self.current_leaders.count() == 0:
                 new_leader = list(self.current_characters.order_by('date_created'))[0]
                 new_leader.is_leader = True
                 new_leader.save()
+                
+            return quest_membership
         else:
             raise QuestMembership.DoesNotExist
+        
+    def is_kicked(self, user):
+        """
+        Checks to see if a user has been kicked from a quest
+        """
+        if user in self.kicked_users.all():
+            return True
+        return False
+        
+    def kick_user(self, user):
+        """
+        Kicks a user from a quest
+        """
+        for character in self.memberships_by_user(user):
+            self.remove_character(character)
+        self.kicked_users.add(user)
 
     def make_leader(self, character):
         """

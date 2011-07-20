@@ -225,18 +225,3 @@ def remove_quest_leader(request, town_slug, quest_slug):
     context = { 'form' : form, 'quest' : quest }
     return render_to_response("game/remove-quest-leader.html", 
                               context, RequestContext(request))
-
-@login_required
-def kick_from_quest(request, town_slug, quest_slug):
-    """
-    Allows a quest leader to kick another character from a quest
-    """
-    quest = get_object_or_404(Quest, slug=quest_slug, town__slug=town_slug)
-    
-    if quest.has_user_as_leader(request.user) is not True:
-        return handle_error(request,
-                            'You are not leader of this quest',
-                            reverse('game:view-quest', args=[town_slug,
-                                                             quest_slug]))
-    
-    
