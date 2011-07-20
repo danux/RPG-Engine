@@ -10,7 +10,7 @@ from django.template import RequestContext
 
 from rpgengine.characters.models import Character
 from rpgengine.game.forms import CreateQuestForm, JoinQuestForm, LeaveQuestForm
-from rpgengine.game.forms import MakeQuestLeaderForm
+from rpgengine.game.forms import MakeQuestLeaderForm, RemoveQuestLeaderForm
 from rpgengine.game.models import Quest
 from rpgengine.world.models import Nation, Town
 from rpgengine.utils.error_handler import handle_error
@@ -136,7 +136,7 @@ def leave_quest(request, town_slug, quest_slug):
         form.set_character_queryset(quest.memberships_by_user(request.user))
         if form.is_valid():
             character = quest.current_characters.get(character__pk = form.cleaned_data['character'],
-                                                            character__author__user = request.user).character
+                                                    character__author__user = request.user).character
             quest.remove_character(character)
             messages.add_message(request,
                                  messages.INFO,
@@ -169,8 +169,7 @@ def make_quest_leader(request, town_slug, quest_slug):
         form = MakeQuestLeaderForm(request.POST)
         form.set_character_queryset(quest.non_leaders)
         if form.is_valid():
-            character = quest.current_characters.get(character__pk = form.cleaned_data['character'],
-                                                     character__author__user = request.user).character
+            character = quest.current_characters.get(character__pk = form.cleaned_data['character']).character
             quest.make_leader(character)
             messages.add_message(request,
                                  messages.INFO,
@@ -186,3 +185,58 @@ def make_quest_leader(request, town_slug, quest_slug):
     context = { 'form' : form, 'quest' : quest }
     return render_to_response("game/make-quest-leader.html", 
                               context, RequestContext(request))
+    
+@login_required
+def remove_quest_leader(request, town_slug, quest_slug):
+    """
+    Removes a leader from a quest
+    """
+    quest = get_object_or_404(Quest, slug=quest_slug, town__slug=town_slug)
+    
+    if quest.has_user_as_leader(request.user) is not True:
+        return handle_error(request,
+                            'You are not leader of this quest',
+                            reverse('game:view-quest', args=[town_slug,
+                                                             quest_slug]))
+    
+    if len(quest.current_characters) == 1:
+        return handle_error(request,
+                            'You have the only character on this quest, therefore you must remain leader',
+                            reverse('game:view-quest', args=[town_slug,
+                                                             quest_slug]))
+        
+    if request.method == 'POST':
+        form = RemoveQuestLeaderForm(request.POST)
+        form.set_character_queryset(quest.current_leaders)
+        if form.is_valid():
+            character = quest.current_leaders.get(character__pk=form.cleaned_data['character']).character
+            quest.remove_leader(character)
+            messages.add_message(request,
+                                 messages.INFO,
+                                 "%s is no longer a quest leader on %s!" % (character.name,
+                                                      quest.name))
+            return HttpResponseRedirect(reverse('game:view-quest',
+                                                args=[town_slug,
+                                                      quest.slug]))
+    else:
+        form = RemoveQuestLeaderForm()
+        form.set_character_queryset(quest.current_leaders)
+    
+    context = { 'form' : form, 'quest' : quest }
+    return render_to_response("game/remove-quest-leader.html", 
+                              context, RequestContext(request))
+
+@login_required
+def kick_from_quest(request, town_slug, quest_slug):
+    """
+    Allows a quest leader to kick another character from a quest
+    """
+    quest = get_object_or_404(Quest, slug=quest_slug, town__slug=town_slug)
+    
+    if quest.has_user_as_leader(request.user) is not True:
+        return handle_error(request,
+                            'You are not leader of this quest',
+                            reverse('game:view-quest', args=[town_slug,
+                                                             quest_slug]))
+    
+    

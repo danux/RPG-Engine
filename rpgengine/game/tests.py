@@ -494,3 +494,56 @@ class JoinExitQuestViewsTestCase(ViewRenderingAndContextTestCase):
         self.assertFalse(self.quest_one.is_leader(self.character_two))
         self.makeLeader(self.character_two, self.quest_one)
         self.assertFalse(self.quest_one.is_leader(self.character_two))
+        
+    def testRemoveLeader(self):
+        """
+        Tests that leaders can be removed through a view
+        """
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.add_character(self.character_two)
+        self.makeLeader(self.character_one, self.quest_one)
+        response = self.client.get(reverse('game:remove-quest-leader',
+                                           args=[self.quest_one.town.slug,
+                                                 self.quest_one.slug,]))
+        self.assertEqual(response.status_code, 200)
+        data = { 'character' : self.character_one.pk }
+        response = self.client.post(reverse('game:remove-quest-leader',
+                                            args=[self.quest_one.town.slug,
+                                                  self.quest_one.slug,]),
+                                            data)
+        self.assertFalse(self.character_one in self.quest_one.current_leaders)
+        
+    def testMustBeLeaderToRemoveLeader(self):
+        """
+        Tests that one must be a quest leader to remove other leaders
+        """
+        self.quest_one.add_character(self.character_three)
+        self.makeLeader(self.character_three, self.quest_one)
+        response = self.client.get(reverse('game:remove-quest-leader',
+                                           args=[self.quest_one.town.slug,
+                                                 self.quest_one.slug,]))
+        self.assertEqual(response.status_code, 302)
+        
+    def testRemoveLeaderViewAssignsNewLeader(self):
+        """
+        Examines what happens when a leader removes themselves (a new leader
+        should be picked)
+        """
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.add_character(self.character_two)
+        data = { 'character' : self.character_one.pk }
+        response = self.client.post(reverse('game:remove-quest-leader',
+                                            args=[self.quest_one.town.slug,
+                                                  self.quest_one.slug,]),
+                                            data)
+        self.assertTrue(self.quest_one.is_leader(self.character_two))
+        
+    def testCanRemoveOnlyCharacterLeader(self):
+        """
+        Tests that you cannot remove leadership from a single character
+        """
+        self.quest_one.add_character(self.character_one)
+        response = self.client.get(reverse('game:remove-quest-leader',
+                                           args=[self.quest_one.town.slug,
+                                                 self.quest_one.slug,]))
+        self.assertEqual(response.status_code, 302)

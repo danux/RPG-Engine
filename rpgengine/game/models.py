@@ -161,7 +161,7 @@ class Quest(models.Model):
         """
         if not self.is_leader(character):
             raise QuestMembership.DoesNotExist
-
+        
         if len(self.current_characters) == 1:
             raise Quest.NoLeaderConflict
 
