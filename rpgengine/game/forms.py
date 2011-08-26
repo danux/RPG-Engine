@@ -7,53 +7,25 @@ class CreateQuestForm(forms.ModelForm):
     """
     The form used to create a quest
     """
+    
+    def __init__(self, *args, **kwargs):
+        queryset = kwargs['queryset']
+        del kwargs['queryset']
+        super(CreateQuestForm, self).__init__(*args, **kwargs)
+        self.fields['character'] = forms.ModelChoiceField(queryset=queryset)
+    
     class Meta:
         model = Quest
         fields = ['name',]
-        
-class QuestForm(forms.ModelForm):
+
+
+class JoinQuestForm(forms.ModelForm):
     """
-    Basic form for joining and leaving a quest
+    The form used to join a quest
     """
     class Meta:
         model = QuestMembership
         fields = ['character',]
-        
-    def set_character_queryset(self, character_queryset):
-        self.fields["character"].queryset = character_queryset
 
-class JoinQuestForm(QuestForm):
-    """
-    The form used to join a quest
-    """
-    pass
-
-class CharacterActionForm(forms.Form):
-    character = forms.ChoiceField()
-
-    def set_character_queryset(self, character_queryset):
-        self.fields["character"].choices = character_queryset.values_list('id', 'character__name')
-        
-class LeaveQuestForm(CharacterActionForm):
-    """
-    The form used to leave a quest
-    """
-    pass
-        
-class MakeQuestLeaderForm(CharacterActionForm):
-    """
-    The form used to make a quest leader
-    """
-    pass
-        
-class RemoveQuestLeaderForm(CharacterActionForm):
-    """
-    The form used to remove a quest leader
-    """
-    pass
-
-class KickUserForm(forms.Form):
-    author = forms.ChoiceField()
-
-    def set_queryset(self, queryset):
-        self.fields["author"].choices = queryset.values_list('id', 'name')
+    def set_character_queryset(self, query_set):
+        self.fields["character"].choices = query_set.values_list('id', 'name')

@@ -8,5 +8,15 @@
             "is_open": true,
             "town" : 4
         }
+    },
+    {
+        "pk": 2,
+        "model": "game.quest",
+        "fields": {
+            "name": "test_quest_two",
+            "slug": "test_quest_two",
+            "is_open": true,
+            "town" : 4
+        }
     }
 ]

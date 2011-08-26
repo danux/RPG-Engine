@@ -14,4 +14,4 @@ pytz
 python-dateutil
 coverage
 django-coverage
-farbic
+fabric

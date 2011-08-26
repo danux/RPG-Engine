@@ -4,7 +4,7 @@ from datetime import datetime
 from fabric.api import *
 from fabric.contrib.project import rsync_project
 from fabsettings import PROJECT_NAME, PRODUCTION_HOST, REMOTE_SITE_DIR
-from fabsettings import STAGING_HOST, REMOTE_VIRTUAL_ENV_DIR
+from fabsettings import STAGING_HOST, REMOTE_VIRTUAL_ENV_DIR, TEST_PACKAGES
 
 from django.conf import settings
 from django.core import management
@@ -19,6 +19,10 @@ def staging():
 def production():
     env.hosts = [PRODUCTION_HOST]
     env.name = 'production'
+    
+def uat():
+    env.hosts = [UAT_HOST]
+    env.name = 'uat'
 
 def virtualenv(command):
     """ Executes a command inside the remote virtualenv """
@@ -62,7 +66,7 @@ def sync():
         
 def test():
     """ Tests the project locally """
-    management.call_command('test_coverage','accounts', 'characters', 'game')
+    management.call_command('test_coverage', 'accounts', 'characters', 'world', 'game')
     
 def push_github():
     """ Pushes the code to Github """
