@@ -18,7 +18,6 @@ class CreateQuestForm(forms.ModelForm):
         model = Quest
         fields = ['name',]
 
-
 class JoinQuestForm(forms.ModelForm):
     """
     The form used to join a quest

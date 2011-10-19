@@ -54,12 +54,19 @@ def create_quest(request, town_slug):
     View that allows members to create a quest
     """
     town = get_object_or_404(Town, slug=town_slug)
+    queryset = Quest.available_characters_by_user(request.user)
+    
+    if len(queryset) < 1:
+        return handle_error(request,
+                            u'You do not have any available characters.',
+                            town.get_absolute_url())
     
     if request.method == 'POST':
         form = CreateQuestForm(request.POST,
-                               queryset=Quest.available_characters_by_user(request.user))
+                               queryset=queryset)
         if form.is_valid():
             quest = form.save(commit=False)
+            quest.is_open = True
             quest.town = town
             quest.save()
             quest.set_initial_member(form.cleaned_data['character'])
@@ -67,13 +74,12 @@ def create_quest(request, town_slug):
                                                 args=[town.slug,
                                                       quest.slug]))
     else:
-        form = CreateQuestForm(queryset=Quest.available_characters_by_user(request.user))
-        form.set_character_queryset(Quest.available_characters_by_user(request.user))
+        form = CreateQuestForm(queryset=queryset)
     context = { 'form' : form }
     return render_to_response("game/create-quest.html", 
                               context,
                               RequestContext(request))
-    
+
 @login_required
 def join_quest(request, town_slug, quest_slug):
     """

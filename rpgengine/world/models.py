@@ -1,4 +1,6 @@
+from django.core.urlresolvers import reverse
 from django.db import models
+
 
 class WorldNode(models.Model):
     """
@@ -28,6 +30,9 @@ class Town(WorldNode):
     """
     nation = models.ForeignKey(Nation)
     is_newbie_friendly = models.NullBooleanField()
+    
+    def get_absolute_url(self):
+        return reverse('game:view-town', args=[self.slug])
     
 class Race(WorldNode):
     """
