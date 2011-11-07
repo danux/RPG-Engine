@@ -1,1 +1,12 @@
-DONE
+<ul>
+{% for nation in nations %}
+<li>
+	<h2>{{ nation.name }}</h2>
+	<ul>
+		{% for town in nation.town_set.all %}
+		<li><a href="{{ town.get_absolute_url }}">{{ town.name }}</a></li>
+		{% endfor %}
+	</ul>
+</li>
+{% endfor %}
+</ul>

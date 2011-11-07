@@ -7,7 +7,6 @@ class CreateQuestForm(forms.ModelForm):
     """
     The form used to create a quest
     """
-    
     def __init__(self, *args, **kwargs):
         queryset = kwargs['queryset']
         del kwargs['queryset']
@@ -18,13 +17,16 @@ class CreateQuestForm(forms.ModelForm):
         model = Quest
         fields = ['name',]
 
-class JoinQuestForm(forms.ModelForm):
+class QuestForm(forms.ModelForm):
     """
-    The form used to join a quest
+    Base form for allowing selection of character for quests
     """
     class Meta:
         model = QuestMembership
         fields = ['character',]
 
-    def set_character_queryset(self, query_set):
-        self.fields["character"].choices = query_set.values_list('id', 'name')
+    def __init__(self, *args, **kwargs):
+        queryset = kwargs['queryset']
+        del kwargs['queryset']
+        super(QuestForm, self).__init__(*args, **kwargs)
+        self.fields['character'] = forms.ModelChoiceField(queryset=queryset)

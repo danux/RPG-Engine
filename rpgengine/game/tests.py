@@ -14,7 +14,7 @@ from django.db import IntegrityError
 from django.test import TestCase
 from django.test.client import Client
 
-from rpgengine.game.forms import CreateQuestForm, JoinQuestForm
+from rpgengine.game.forms import CreateQuestForm, QuestForm
 from rpgengine.game.models import Quest, QuestMembership
 from rpgengine.characters.models import Character
 from rpgengine.world.models import Town
@@ -49,8 +49,8 @@ class QuestModelTestCase(TestCase):
         Tests that the Quest object has a static method that can
         return available characters for a user
         """
-        self.assertEqual(len(Quest.available_characters_by_user(self.test_member)), 2)
-        self.assertEqual(len(Quest.available_characters_by_user(self.test_admin)), 1)
+        self.assertEqual(len(Character.available_characters_by_user(self.test_member)), 2)
+        self.assertEqual(len(Character.available_characters_by_user(self.test_admin)), 1)
         
     def testRealmRenders(self):
         """
@@ -199,7 +199,7 @@ class JoinQuestsTestCase(QuestModelTestCase):
                                                  self.quest_one.slug]))
         self.assertTrue(response.status_code, 200)
         self.assertTemplateUsed(response, 'game/join-quest.html')
-        self.assertTrue(isinstance(response.context['form'], JoinQuestForm))
+        self.assertTrue(isinstance(response.context['form'], QuestForm))
         self.assertEquals(2, len(response.context['form'].fields['character'].choices))
         
     def testPostJoinQuestForm(self):
@@ -229,6 +229,8 @@ class JoinQuestsTestCase(QuestModelTestCase):
                                             args=[self.town_one.slug,
                                                   self.quest_one.slug]),
                                     data)
+        self.assertFormError(response, "form", 'character',
+                "Select a valid choice. That choice is not one of the available choices.")
 
 class LeaveQuestsTestCase(QuestModelTestCase):
     """
@@ -239,40 +241,85 @@ class LeaveQuestsTestCase(QuestModelTestCase):
         The quests model must provide a method for removing a character from 
         a quest
         """
-        
+        self.quest_one.add_character(self.character_one)
+        self.assertTrue(self.quest_one.remove_character(self.character_one))
+        self.assertEqual(len(self.quest_one.active_characters()), 0)
+
     def testLeaveQuestNotOn(self):
         """
         An exception must be raised when a character is not on a quest and
         it is asked to be removed
         """
-        
+        self.assertRaises(QuestMembership.DoesNotExist,
+                          lambda: self.quest_one.remove_character(self.character_one))
+
     def testLeaveQuestForm(self):
         """
         A form must be rendered allowing an author to remove their characters
         from a quest. The form must render with a select field that correctly
         contains the characters on a quest
         """
+        self.quest_one.add_character(self.character_one)
+        response = self.client.get(reverse('game:leave-quest',
+                                           args=[self.town_one.slug, self.quest_one.slug]))
+        self.assertTrue(response.status_code, 200)
+        self.assertTemplateUsed(response, 'game/leave-quest.html')
+        self.assertTrue(isinstance(response.context['form'], QuestForm))
+        self.assertEquals(1, len(response.context['form'].fields['character'].choices))
 
     def testPostLeaveQuestForm(self):
         """
         Posting the form to the server should remove the character selected
         from the quest
         """
-        
+        self.quest_one.add_character(self.character_one)
+        data = {'character' : self.character_one.pk}
+        response = self.client.post(reverse('game:leave-quest',
+                                            args=[self.town_one.slug,
+                                                  self.quest_one.slug]),
+                                    data)
+        self.assertEqual(len(self.quest_one.active_characters()), 0)
+        self.assertRedirects(response,
+                             reverse('game:view-quest', args=[self.town_one.slug,
+                                                              self.quest_one.slug]))
+
     def testRemoveOtherPeoplesCharacter(self):
         """
         An invalid character error should be displayed on the form when it is
         submitted with the ID of another user's characters
         """
-        
+        data = {'character' : self.character_three.pk}
+        response = self.client.post(reverse('game:leave-quest',
+                                            args=[self.town_one.slug,
+                                                  self.quest_one.slug]),
+                                    data)
+        self.assertFormError(response, "form", 'character',
+                "Select a valid choice. That choice is not one of the available choices.")
+
     def testRemoveCharacterNotOnQuest(self):
         """
         Attempting to remove a character that is not on a quest but does
         belong to the required user cannot be removed
         """
+        data = {'character' : self.character_one.pk}
+        response = self.client.post(reverse('game:leave-quest',
+                                            args=[self.town_one.slug,
+                                                  self.quest_one.slug]),
+                                    data)
+        self.assertFormError(response, "form", 'character',
+                "Select a valid choice. That choice is not one of the available choices.")
     
     def testRemoveCharacterAlreadyRemoved(self):
         """
         Test that a form error is created when attempting to remove a character
         that has already been removed
         """
+        self.quest_one.add_character(self.character_one)
+        self.quest_one.remove_character(self.character_one)
+        data = {'character' : self.character_one.pk}
+        response = self.client.post(reverse('game:leave-quest',
+                                            args=[self.town_one.slug,
+                                                  self.quest_one.slug]),
+                                    data)
+        self.assertFormError(response, "form", 'character',
+                "Select a valid choice. That choice is not one of the available choices.")

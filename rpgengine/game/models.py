@@ -40,15 +40,6 @@ class Quest(models.Model):
         on another quest
         """
 
-    @staticmethod
-    def available_characters_by_user(user):
-        """
-        Returns all of the available characters for a given user. I.e.
-        the characters are not currently on a quest
-        """
-        return Character.approved_characters_by_user(user).exclude(questmembership__date_left__isnull=True,
-                                                                   questmembership__pk__isnull=False,)
-
     def set_initial_member(self, character):
         """
         Adds the first member of a quest, and makes them leader
@@ -83,6 +74,24 @@ class Quest(models.Model):
             quest_membership = QuestMembership.objects.create(quest=self,
                                                               character=character)
             return quest_membership
+
+    def remove_character(self, character):
+        """
+        Removes a character from a quest, returns false if character
+        is not on the quest
+        """
+        membership = self.questmembership_set.get(character=character,
+                                                  date_left__isnull=True)
+        membership.date_left = datetime.now()
+        membership.save()
+        return True
+
+    def active_characters(self):
+        """
+        Yields all the characters currently on this quest
+        """
+        return [questmembership.character for questmembership 
+                in self.questmembership_set.filter(date_left__isnull=True)]
 
 class QuestMembership(models.Model):
     """

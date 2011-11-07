@@ -69,4 +69,13 @@ class Character(models.Model):
         """
         return user.userprofile.character_set.exclude(date_approved__isnull=True)
 
+    @staticmethod
+    def available_characters_by_user(user):
+        """
+        Returns all of the available characters for a given user. I.e.
+        the characters are not currently on a quest
+        """
+        return Character.approved_characters_by_user(user).exclude(questmembership__date_left__isnull=True,
+                                                                   questmembership__pk__isnull=False)
+
 pre_save.connect(slug_generator, sender=Character)
