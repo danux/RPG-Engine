@@ -94,12 +94,9 @@ class Quest(models.Model):
         return [questmembership.character for questmembership 
                 in self.questmembership_set.filter(date_left__isnull=True)]
 
-<<<<<<< HEAD
     def get_absolute_url(self):
         return reverse('game:view-quest', args=[self.town.slug, self.slug])
 
-=======
->>>>>>> dbc4ad4d416bb8af5e1cce39f4c316c20c3600be
 class QuestMembership(models.Model):
     """
     Model to manage relationship between a character and a Quest
