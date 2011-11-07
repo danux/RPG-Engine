@@ -1,29 +1,24 @@
 import os
 
-PROJECT_ROOT = os.path.dirname(__file__)
-STATIC_ROOT = os.path.join(PROJECT_ROOT, "../static-files")
-MEDIA_ROOT = os.path.join(PROJECT_ROOT, "../media")
-TEMPLATE_DIRS = (os.path.join(PROJECT_ROOT, "../templates"),)
-STATIC_URL = '/static-files/'
-STATIC_URL = '/media/'
+
+SITE_ID = 1
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
-SITE_ID = 1
 
-# Set this to a unique, random phrase and keep it secret.
+PROJECT_ROOT = os.path.dirname(__file__)
+STATIC_ROOT = os.path.join(PROJECT_ROOT, "../static/")
+MEDIA_ROOT = os.path.join(PROJECT_ROOT, "../media")
+TEMPLATE_DIRS = (os.path.join(PROJECT_ROOT, "../templates"),)
+
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
 SECRET_KEY = "^brmcy8*+lt!i8fwjceco67&1+d3tn2*@xv4_b1%)9!u+9pj6("
 
-# If you are running multiple Vertex sites on this server, set this to a unique
-# phrase.
 CACHE_MIDDLEWARE_KEY_PREFIX = "rpgengine"
 
-# Vertex will send you notifications of broken links found on your website.
-# Change this to provide a helpful prefix for all of these emails to help keep
-# your inbox well-sorted.
 EMAIL_SUBJECT_PREFIX = "[RPGEngine]"
 
-# This setting installs the base set of Vertex applications.  Add your own
-# custom applications to enable additional functionality for your site.
 INSTALLED_APPS = ("django.contrib.auth",
                   "django.contrib.contenttypes",
                   "django.contrib.sessions",
@@ -32,7 +27,6 @@ INSTALLED_APPS = ("django.contrib.auth",
                   "django.contrib.admindocs",
                   "django.contrib.redirects",
                   "django.contrib.sitemaps",
-                  "django.contrib.syndication",
                   "django.contrib.messages",
                   "django.contrib.staticfiles",
                   "reversion",
@@ -47,12 +41,12 @@ INSTALLED_APPS = ("django.contrib.auth",
                   "rpgengine.characters",
                   "rpgengine.game")
 
-TEMPLATE_CONTEXT_PROCESSORS = ("django.contrib.auth.context_processors.auth",
-                               "django.contrib.messages.context_processors.messages",
-                               "django.core.context_processors.i18n",
+TEMPLATE_CONTEXT_PROCESSORS = ("django.core.context_processors.i18n",
                                "django.core.context_processors.request",
                                "django.core.context_processors.media",
-                               "django.core.context_processors.static")
+                               "django.core.context_processors.static",
+                               "django.contrib.auth.context_processors.auth",
+                               "django.contrib.messages.context_processors.messages",)
 
 MIDDLEWARE_CLASSES = ("django.middleware.transaction.TransactionMiddleware",
                       "django.middleware.common.CommonMiddleware",
@@ -63,17 +57,14 @@ MIDDLEWARE_CLASSES = ("django.middleware.transaction.TransactionMiddleware",
                       "django.contrib.messages.middleware.MessageMiddleware",
                       "debug_toolbar.middleware.DebugToolbarMiddleware",)
 
-# Accounts Settings
-ACCOUNT_ACTIVATION_DAYS = 7
 ROOT_URLCONF = "rpgengine.urls"
 LOGIN_REDIRECT_URL = '/accounts/login/'
 
-# Misc settings
+ACCOUNT_ACTIVATION_DAYS = 7
 AUTH_PROFILE_MODULE = 'accounts.UserProfile'
 
 TIME_ZONE = 'UTC'
 
-#  Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
