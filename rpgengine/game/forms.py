@@ -30,3 +30,15 @@ class QuestForm(forms.ModelForm):
         del kwargs['queryset']
         super(QuestForm, self).__init__(*args, **kwargs)
         self.fields['character'] = forms.ModelChoiceField(queryset=queryset)
+
+class LeadershipForm(forms.Form):
+    """
+    A form that allows quest leaders to select additional users
+    to lead the quest
+    """
+    def __init__(self, *args, **kwargs):
+        choices = kwargs['choices']
+        del kwargs['choices']
+        super(LeadershipForm, self ).__init__(*args, **kwargs)
+        self.fields['user'] = forms.ChoiceField(
+                choices=[(x.user.pk, x.name) for x in choices])

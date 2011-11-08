@@ -243,7 +243,7 @@ class LeaveQuestsTestCase(QuestModelTestCase):
         """
         self.quest_one.add_character(self.character_one)
         self.assertTrue(self.quest_one.remove_character(self.character_one))
-        self.assertEqual(len(self.quest_one.active_characters()), 0)
+        self.assertEqual(len(self.quest_one.active_characters), 0)
 
     def testLeaveQuestNotOn(self):
         """
@@ -278,7 +278,7 @@ class LeaveQuestsTestCase(QuestModelTestCase):
                                             args=[self.town_one.slug,
                                                   self.quest_one.slug]),
                                     data)
-        self.assertEqual(len(self.quest_one.active_characters()), 0)
+        self.assertEqual(len(self.quest_one.active_characters), 0)
         self.assertRedirects(response,
                              reverse('game:view-quest', args=[self.town_one.slug,
                                                               self.quest_one.slug]))
@@ -385,34 +385,51 @@ class LeadershipAssignmnetTestCase(QuestModelTestCase):
     """
     Series of tests for assigning new quest leaders.
     """
-    def testAddLeader(self):
+    def testAddLeaderForm(self):
         """
-        A leader can add additional leaders to a quest
+        A form is provided to the quest leader to add another leader.
+        The form must be pre-populated with all Authors who are not
+        currently leaders
         """
-        pass
+        self.quest_one.set_initial_member(self.character_one)
+        self.quest_one.add_character(self.character_two)
+        self.quest_one.add_character(self.character_three)
+        self.quest_one.add_character(self.character_four)
+        response = self.client.get(reverse('game:add-leader',
+                args=[self.quest_one.town.slug, self.quest_one.slug]))
+        self.assertEquals(1, len(response.context['form'].fields['user'].choices))
 
-    def testLeaderCanLeaveQuest(self):
+    def testAddLeaderSubmits(self):
         """
-        If another leader is on the quest a leader may leave
+        Tests that submitting a valid author to make leader correctly
+        adds the user to the leaders
         """
-        pass
+        self.quest_one.set_initial_member(self.character_one)
+        self.quest_one.add_character(self.character_three)
+        self.assertFalse(self.quest_one.is_leader(self.test_admin))
+        data = {'user' : self.test_admin.pk}
+        response = self.client.post(reverse('game:add-leader',
+                                            args=[self.quest_one.town.slug, self.quest_one.slug]),
+                                    data)
+        self.quest_one = Quest.objects.get(pk=1)
+        self.assertTrue(self.quest_one.is_leader(self.test_admin))
+        self.assertRedirects(response, self.quest_one.get_absolute_url())
 
-    def testLeaderCannotLeaveQuestIfOnlyLeader(self):
-        """
-        A leader cannot leave a quest is they are the only leader
-        """
-        pass
+    def testCannotAddLeaderAlreadyLeader(self):
+        self.quest_one.set_initial_member(self.character_one)
+        self.quest_one.leaders.add(self.character_three.author.user)
+        data = {'user' : 1}
+        response = self.client.post(reverse('game:add-leader',
+                                            args=[self.quest_one.town.slug, self.quest_one.slug]),
+                                    data)
+        self.assertFormError(response, "form", 'user',
+                "Select a valid choice. 1 is not one of the available choices.")
 
-    def testLeaderCanRemoveCharacters(self):
-        """
-        A leader can remove other characters from a quest and their
-        leadership is also removed
-        """
-        pass
-
-    def testLeaderCanBanUsersFromQuest(self):
-        """
-        A leader is able to ban a user form a quest, that user has
-        all their characters removed and is unable to rejoin
-        """
-        pass
+    def testCannotAddLeaderNotOnQuest(self):
+        self.quest_one.set_initial_member(self.character_one)
+        data = {'user' : 1}
+        response = self.client.post(reverse('game:add-leader',
+                                            args=[self.quest_one.town.slug, self.quest_one.slug]),
+                                    data)
+        self.assertFormError(response, "form", 'user',
+                "Select a valid choice. 1 is not one of the available choices.")

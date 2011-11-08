@@ -6,9 +6,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
+from django.contrib.auth.models import User
 
 from rpgengine.characters.models import Character
-from rpgengine.game.forms import CreateQuestForm, QuestForm
+from rpgengine.game.forms import CreateQuestForm, QuestForm, LeadershipForm
 from rpgengine.game.models import Quest
 from rpgengine.world.models import Nation, Town
 from rpgengine.utils.error_handler import handle_error
@@ -141,3 +142,22 @@ def close_quest(request, town_slug, quest_slug):
         return handle_error(request,
                             u'You are not the quest leader.',
                             quest.get_absolute_url())
+
+@login_required
+def add_leader(request, town_slug, quest_slug):
+    """
+    View that allows a current quest leader to add additional leaders.
+    """
+    quest = get_object_or_404(Quest, slug=quest_slug, town__slug=town_slug)
+    if request.method == 'POST':
+        form = LeadershipForm(request.POST, choices=quest.non_leader_authors)
+        if form.is_valid():
+            quest.leaders.add(User.objects.get(pk=form.cleaned_data['user']))
+            quest.save()
+            return HttpResponseRedirect(quest.get_absolute_url())
+    else:
+        form = LeadershipForm(choices=quest.non_leader_authors)
+    context = {'form' : form}
+    return render_to_response("game/add-leader.html", 
+                               context,
+                               RequestContext(request))

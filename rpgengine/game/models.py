@@ -87,12 +87,25 @@ class Quest(models.Model):
         membership.save()
         return True
 
+    @property
     def active_characters(self):
         """
-        Yields all the characters currently on this quest
+        Returns all the characters currently on this quest
         """
         return [questmembership.character for questmembership 
                 in self.questmembership_set.filter(date_left__isnull=True)]
+
+    @property
+    def authors(self):
+        return [character.author for character in self.active_characters]
+
+    @property
+    def non_leader_authors(self):
+        return list(set(filter(lambda x: x.user not in self.leaders.all(), self.authors)))
+
+    # @property
+    # def leader_authors(self):
+    #     return list(set(filter(lambda x: x.user in self.leaders.all(), self.authors)))
 
     def get_absolute_url(self):
         return reverse('game:view-quest', args=[self.town.slug, self.slug])
