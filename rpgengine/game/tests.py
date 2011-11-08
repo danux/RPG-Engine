@@ -324,7 +324,7 @@ class LeaveQuestsTestCase(QuestModelTestCase):
         self.assertFormError(response, "form", 'character',
                 "Select a valid choice. That choice is not one of the available choices.")
 
-class QuestLeadershipTestCase(QuestModelTestCase):
+class CloseQuestTestCase(QuestModelTestCase):
     """
     Series of tests to ensure quest leaders have the necessary controls
     for running a quest.
@@ -333,31 +333,86 @@ class QuestLeadershipTestCase(QuestModelTestCase):
         """
         A leader should be able to close a quest when it has ended
         """
+        self.assertTrue(self.quest_one.is_open)
+        self.quest_one.set_initial_member(self.character_one)
+        response = self.client.post(reverse('game:close-quest',
+                                            args=[self.quest_one.town.slug, self.quest_one.slug]),
+                                    {})
+        self.quest_one = Quest.objects.get(pk=1)
+        self.assertFalse(self.quest_one.is_open)
+        self.assertRedirects(response, self.quest_one.get_absolute_url())
 
+    def testNoneLeaderCannotCloseQuest(self):
+        """
+        A member of the quest who is not leader cannot close the quest.
+        """
+        self.assertTrue(self.quest_one.is_open)
+        self.quest_one.set_initial_member(self.character_three)
+        response = self.client.post(reverse('game:close-quest',
+                                            args=[self.quest_one.town.slug, self.quest_one.slug]),
+                                    {})
+        self.quest_one = Quest.objects.get(pk=1)
+        self.assertTrue(self.quest_one.is_open)
+        self.assertRedirects(response, self.quest_one.get_absolute_url())
+
+    def testCloseMustBePosted(self):
+        """
+        Quest closes must be posted for security purposes.
+        """
+        self.assertTrue(self.quest_one.is_open)
+        self.quest_one.set_initial_member(self.character_one)
+        response = self.client.get(reverse('game:close-quest',
+                                            args=[self.quest_one.town.slug, self.quest_one.slug]))
+        self.quest_one = Quest.objects.get(pk=1)
+        self.assertTrue(self.quest_one.is_open)
+        self.assertRedirects(response, self.quest_one.get_absolute_url())
+
+    def testCannotCloseClosedQuest(self):
+        """
+        An error should be raised if a quest is already closed.
+        """
+        self.quest_one.set_initial_member(self.character_one)
+        self.quest_one.is_open = False
+        self.quest_one.save()
+        response = self.client.post(reverse('game:close-quest',
+                                            args=[self.quest_one.town.slug, self.quest_one.slug]),
+                                    {})
+        self.assertRedirects(response, self.quest_one.get_absolute_url())
+        self.quest_one = Quest.objects.get(pk=1)
+        self.assertFalse(self.quest_one.is_open)
+
+class LeadershipAssignmnetTestCase(QuestModelTestCase):
+    """
+    Series of tests for assigning new quest leaders.
+    """
     def testAddLeader(self):
         """
         A leader can add additional leaders to a quest
         """
+        pass
 
     def testLeaderCanLeaveQuest(self):
         """
         If another leader is on the quest a leader may leave
         """
+        pass
 
     def testLeaderCannotLeaveQuestIfOnlyLeader(self):
         """
         A leader cannot leave a quest is they are the only leader
         """
+        pass
 
     def testLeaderCanRemoveCharacters(self):
         """
         A leader can remove other characters from a quest and their
         leadership is also removed
         """
+        pass
 
     def testLeaderCanBanUsersFromQuest(self):
         """
         A leader is able to ban a user form a quest, that user has
         all their characters removed and is unable to rejoin
         """
-    
+        pass

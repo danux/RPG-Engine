@@ -118,3 +118,26 @@ def leave_quest(request, town_slug, quest_slug):
     return render_to_response("game/leave-quest.html", 
                               context,
                               RequestContext(request))
+
+@login_required
+def close_quest(request, town_slug, quest_slug):
+    """
+    View that allows a leader to close a quest
+    """
+    quest = get_object_or_404(Quest, slug=quest_slug, town__slug=town_slug)
+    if request.method != 'POST':
+        return handle_error(request,
+                            u'Quests can only be accessed using the POST method.',
+                            quest.get_absolute_url())
+    if not quest.is_open:
+        return handle_error(request,
+                            u'This quest has already been closed.',
+                            quest.get_absolute_url())
+    if quest.is_leader(request.user):
+        quest.is_open = False
+        quest.save()
+        return HttpResponseRedirect(quest.get_absolute_url())
+    else:
+        return handle_error(request,
+                            u'You are not the quest leader.',
+                            quest.get_absolute_url())
