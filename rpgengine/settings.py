@@ -58,7 +58,7 @@ MIDDLEWARE_CLASSES = ("django.middleware.transaction.TransactionMiddleware",
                       "debug_toolbar.middleware.DebugToolbarMiddleware",)
 
 ROOT_URLCONF = "rpgengine.urls"
-LOGIN_REDIRECT_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/accounts/'
 
 ACCOUNT_ACTIVATION_DAYS = 7
 AUTH_PROFILE_MODULE = 'accounts.UserProfile'

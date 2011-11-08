@@ -2,7 +2,8 @@
 from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.core.urlresolvers import reverse
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
@@ -46,8 +47,12 @@ def application_form(request, character_id=None):
             else:
                 character.date_submitted = datetime.now()
                 character.save()
+            return HttpResponseRedirect(reverse('accounts:my-account'))
     else:
-        form = ApplicationForm()
+        if character_id is not None:
+            form = ApplicationForm(instance=character)
+        else:
+            form = ApplicationForm()
 
     context = { 'form' : form }
     return render_to_response("characters/application-form.html", 

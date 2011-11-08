@@ -1,0 +1,22 @@
+<h1>My Account</h1>
+<h2>Overview</h2>
+<ul>
+	<li><strong>Pen Name:</strong> {{ request.user.get_profile.name }}</strong></li>
+	<li><strong>Date of Birth:</strong> {{ request.user.get_profile.date_of_birth|date }}</strong></li>
+</ul>
+
+<h2>Characters</h2>
+<ul>
+{% for character in request.user.get_profile.character_set.all %}
+<li>
+	{% if character.is_approved %}[Approved] {{ character.name }}{% endif %}
+	{% if character.status == 'draft' %}
+		[draft] <a href="{% url characters:amend-application-form character.pk %}">{{ character.name }}</a>
+		{% endif %}
+	{% if character.status == 'pending' %}
+		[pending] {{ character.name }}
+	{% endif %}
+</li>
+{% endfor %}
+<li><a href="{% url characters:application-form %}">Create new character</li>
+</ul>

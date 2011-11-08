@@ -47,9 +47,9 @@ class CharacterCreationTestCase(TestCase):
             post_data['Submit'] = True
         else:
             post_data['Save'] = True
-        response = self.client.post(url, 
-                                    post_data)
-        self.assertEqual(response.status_code, 200)
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('accounts:my-account'))
 
     def testBlankForm(self):
         response = self.client.get(reverse('characters:application-form'))
@@ -78,6 +78,9 @@ class CharacterCreationTestCase(TestCase):
         self.submit_application_form()
         character = Character.objects.get(pk=5)
         self.assertFalse(character.is_approved)
+
+        response = self.client.get(reverse('characters:amend-application-form', args=[5]))
+        self.assertEqual(response.status_code, 200)
         
         self.submit_application_form(submit=True,
                 url=reverse('characters:amend-application-form', args=[5]))
@@ -103,7 +106,8 @@ class CharacterCreationTestCase(TestCase):
         }
         response = self.client.post(reverse('characters:application-form'), 
                                     post_data)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('accounts:my-account'))
         
         post_data = {
             'physical_appearence' : 'test_appearance',
@@ -115,7 +119,8 @@ class CharacterCreationTestCase(TestCase):
         }
         response = self.client.post(reverse('characters:application-form'), 
                                     post_data)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('accounts:my-account'))
         
         character_one = Character.objects.get(pk=5)
         character_two = Character.objects.get(pk=6)

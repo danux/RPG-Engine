@@ -12,8 +12,8 @@ class ApplicationForm(forms.ModelForm):
     class Meta:
         model = Character
         fields =['name',
-                  'race',
-                  'hometown',
-                  'back_story',
-                  'physical_appearence',
-                  'avatar']
+                 'race',
+                 'hometown',
+                 'back_story',
+                 'physical_appearence',
+                 'avatar']

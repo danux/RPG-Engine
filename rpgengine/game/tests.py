@@ -323,3 +323,41 @@ class LeaveQuestsTestCase(QuestModelTestCase):
                                     data)
         self.assertFormError(response, "form", 'character',
                 "Select a valid choice. That choice is not one of the available choices.")
+
+class QuestLeadershipTestCase(QuestModelTestCase):
+    """
+    Series of tests to ensure quest leaders have the necessary controls
+    for running a quest.
+    """
+    def testLeaderCanCloseQuest(self):
+        """
+        A leader should be able to close a quest when it has ended
+        """
+
+    def testAddLeader(self):
+        """
+        A leader can add additional leaders to a quest
+        """
+
+    def testLeaderCanLeaveQuest(self):
+        """
+        If another leader is on the quest a leader may leave
+        """
+
+    def testLeaderCannotLeaveQuestIfOnlyLeader(self):
+        """
+        A leader cannot leave a quest is they are the only leader
+        """
+
+    def testLeaderCanRemoveCharacters(self):
+        """
+        A leader can remove other characters from a quest and their
+        leadership is also removed
+        """
+
+    def testLeaderCanBanUsersFromQuest(self):
+        """
+        A leader is able to ban a user form a quest, that user has
+        all their characters removed and is unable to rejoin
+        """
+    

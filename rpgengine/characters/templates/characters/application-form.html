@@ -2,5 +2,6 @@
 {% csrf_token %}
 {{ form.as_p }}
 <input type="submit" name="Submit" value="Submit" />
-<input type="submit" name="Save value="Save" />
+<input type="submit" name="Save" value="Save" />
+<a href="{% url accounts:my-account %}">Back to my account</a>
 </form>
